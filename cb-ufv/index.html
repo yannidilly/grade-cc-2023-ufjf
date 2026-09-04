@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Árvore de Habilidades — Ciências Biológicas (UFV)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#0a0b14;
+  --bg-1:#11131f;
+  --bg-2:#171a2b;
+  --panel:#1a1d2e;
+  --panel-2:#20243a;
+  --ink:#e7e6f5;
+  --ink-dim:#9a9cb8;
+  --ink-faint:#6b6d8a;
+  --gold:#e8b83d;
+  --gold-glow:rgba(232,184,61,.55);
+  --green:#3ddc84;
+  --green-glow:rgba(61,220,132,.5);
+  --blue:#4aa8ff;
+  --blue-glow:rgba(74,168,255,.55);
+  --red:#ff5d6c;
+  --gray:#565a75;
+  --border:#2a2e45;
+  font-size:15px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background:
+    radial-gradient(ellipse 1200px 800px at 15% -10%, rgba(30,110,90,.22), transparent 60%),
+    radial-gradient(ellipse 1000px 700px at 100% 10%, rgba(40,120,140,.16), transparent 55%),
+    radial-gradient(ellipse 900px 900px at 50% 120%, rgba(120,100,30,.10), transparent 60%),
+    var(--bg-0);
+  color:var(--ink);
+  font-family:'Rajdhani',system-ui,sans-serif;
+  min-height:100vh;
+  background-attachment:fixed;
+}
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.5), transparent),
+    radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,.4), transparent),
+    radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,.35), transparent),
+    radial-gradient(1px 1px at 90% 20%, rgba(255,255,255,.4), transparent),
+    radial-gradient(1px 1px at 55% 15%, rgba(255,255,255,.3), transparent),
+    radial-gradient(1.5px 1.5px at 10% 65%, rgba(255,255,255,.3), transparent);
+  background-size: 100% 100%;
+  opacity:.5;
+  pointer-events:none;
+  z-index:0;
+}
+h1,h2,h3,.font-title{font-family:'Cinzel',serif;}
+
+header{
+  position:relative; z-index:2;
+  padding:18px 24px 14px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(20,22,36,.92), rgba(20,22,36,.75));
+  backdrop-filter:blur(6px);
+  display:flex; flex-wrap:wrap; gap:16px 28px; align-items:center; justify-content:space-between;
+}
+.brand{display:flex; align-items:center; gap:12px; min-width:260px;}
+.brand-emblem{
+  width:44px;height:44px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #3a6650, #12141f 70%);
+  border:2px solid var(--green);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px; box-shadow:0 0 16px var(--green-glow);
+  flex:0 0 auto;
+}
+.brand h1{margin:0; font-size:1.35rem; letter-spacing:.5px; color:var(--gold); text-shadow:0 0 18px rgba(232,184,61,.25);}
+.brand p{margin:2px 0 0; font-size:.8rem; color:var(--ink-dim); font-weight:500;}
+
+.stats{display:flex; gap:22px; flex-wrap:wrap; align-items:center;}
+.stat{min-width:150px;}
+.stat-label{font-size:.68rem; text-transform:uppercase; letter-spacing:1px; color:var(--ink-faint); font-weight:600;}
+.stat-value{font-size:1.05rem; font-weight:700; color:var(--ink);}
+.progress-bar{width:170px; height:8px; border-radius:5px; background:#1f2238; border:1px solid var(--border); overflow:hidden; margin-top:4px;}
+.progress-fill{height:100%; background:linear-gradient(90deg,var(--green),#7ef0ac); box-shadow:0 0 10px var(--green-glow); transition:width .4s ease;}
+.progress-fill.elective{background:linear-gradient(90deg,var(--blue),#9ecfff); box-shadow:0 0 10px var(--blue-glow);}
+
+.controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+input#search{
+  background:var(--panel); border:1px solid var(--border); color:var(--ink);
+  padding:9px 12px; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:.9rem;
+  width:200px; outline:none;
+}
+input#search::placeholder{color:var(--ink-faint);}
+input#search:focus{border-color:var(--gold);}
+button{
+  font-family:'Rajdhani',sans-serif; font-weight:600; font-size:.85rem;
+  padding:9px 14px; border-radius:8px; border:1px solid var(--border);
+  background:var(--panel); color:var(--ink); cursor:pointer; letter-spacing:.3px;
+  transition:all .15s ease; white-space:nowrap;
+}
+button:hover{border-color:var(--ink-dim); background:var(--panel-2);}
+button#simulateToggle.active{
+  background:linear-gradient(160deg, rgba(74,168,255,.28), rgba(74,168,255,.1));
+  border-color:var(--blue); color:#cfe7ff; box-shadow:0 0 14px rgba(74,168,255,.35);
+}
+button#simulateToggle::before{content:"○ "; }
+button#simulateToggle.active::before{content:"● ";}
+button#electivesToggle.active{
+  background:linear-gradient(160deg, rgba(61,220,132,.22), rgba(61,220,132,.08));
+  border-color:var(--green); color:#c9ffe0;
+}
+button.danger:hover{border-color:var(--red); color:#ffb3ba;}
+
+.legend-bar{
+  position:relative; z-index:2;
+  display:flex; flex-wrap:wrap; gap:18px 26px; align-items:center;
+  padding:10px 24px; font-size:.78rem; color:var(--ink-dim);
+  border-bottom:1px solid var(--border); background:rgba(15,16,26,.6);
+}
+.legend-group{display:flex; gap:12px; align-items:center; flex-wrap:wrap;}
+.legend-title{font-weight:700; color:var(--ink-faint); text-transform:uppercase; font-size:.66rem; letter-spacing:1px; margin-right:2px;}
+.legend-node{
+  width:16px;height:16px;border-radius:4px;border:2px solid; display:inline-block; flex:0 0 auto;
+}
+.legend-item{display:flex; align-items:center; gap:6px;}
+
+#board{
+  position:relative; z-index:1;
+  overflow-x:auto; overflow-y:hidden;
+  padding:26px 24px 10px;
+}
+#content{position:relative;}
+#edges{position:absolute; top:0; left:0; pointer-events:none; z-index:0;}
+#columns{position:relative; z-index:1; display:flex; gap:30px; align-items:flex-start;}
+
+.column{width:190px; flex:0 0 auto;}
+.col-head{
+  position:sticky; top:0;
+  margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border);
+}
+.col-head .period-num{
+  font-family:'Cinzel',serif; font-weight:700; color:var(--gold); font-size:.95rem; letter-spacing:1px;
+}
+.col-head .period-hours{font-size:.7rem; color:var(--ink-faint); font-weight:600; margin-top:2px;}
+
+.node{
+  position:relative;
+  margin-bottom:18px;
+  padding:10px 11px 9px;
+  border-radius:11px;
+  border:2px solid var(--border);
+  background:linear-gradient(155deg, #1c1f33, #14162350);
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .2s ease, border-color .2s ease, opacity .2s ease, filter .2s ease;
+  user-select:none;
+  width:190px;
+}
+.node:hover{transform:translateY(-2px);}
+.node .area-tab{
+  position:absolute; left:-2px; top:-2px; bottom:-2px; width:5px; border-radius:11px 0 0 11px;
+}
+.node .top-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
+.node .code{font-size:.68rem; font-weight:700; letter-spacing:.6px; color:var(--ink-faint); font-family:'Rajdhani',sans-serif;}
+.node .status-icon{font-size:.8rem; line-height:1;}
+.node .name{font-size:.8rem; font-weight:600; line-height:1.22; color:var(--ink); min-height:2.4em;}
+.node .bottom-row{display:flex; justify-content:space-between; align-items:center; margin-top:7px;}
+.node .hours{font-size:.66rem; color:var(--ink-faint); font-weight:600;}
+.node .area-badge{font-size:.6rem; font-weight:700; padding:1px 6px; border-radius:20px; letter-spacing:.5px;}
+
+.node.locked{filter:grayscale(.75) brightness(.6); opacity:.72;}
+.node.locked:hover{transform:none;}
+.node.locked .name{color:var(--ink-faint);}
+
+.node.available{
+  border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(232,184,61,.15), 0 0 16px var(--gold-glow);
+  animation:pulseGold 2.6s ease-in-out infinite;
+}
+@keyframes pulseGold{
+  0%,100%{box-shadow:0 0 0 1px rgba(232,184,61,.15), 0 0 12px rgba(232,184,61,.35);}
+  50%{box-shadow:0 0 0 1px rgba(232,184,61,.25), 0 0 22px rgba(232,184,61,.65);}
+}
+
+.node.done{
+  border-color:var(--green);
+  background:linear-gradient(155deg, #163827, #10231c);
+  box-shadow:0 0 16px var(--green-glow);
+}
+.node.done .name{color:#d9ffe8;}
+
+.node.planned{
+  border-color:var(--blue);
+  border-style:dashed;
+  background:linear-gradient(155deg, #16263d, #0f1a2c);
+  box-shadow:0 0 16px var(--blue-glow);
+}
+
+.node.dim{opacity:.18; filter:grayscale(1) brightness(.5);}
+.node.search-hit{outline:2px solid #fff; outline-offset:2px;}
+
+.node.hl-source{transform:translateY(-3px) scale(1.03); z-index:5;}
+.node.hl-prereq{box-shadow:0 0 0 2px var(--gold), 0 0 18px var(--gold-glow) !important;}
+.node.hl-unlock{box-shadow:0 0 0 2px var(--green), 0 0 18px var(--green-glow) !important;}
+
+.node.locked-shake{animation:shake .35s;}
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-4px);}
+  40%{transform:translateX(4px);}
+  60%{transform:translateX(-3px);}
+  80%{transform:translateX(3px);}
+}
+
+/* ---------- Optativas ---------- */
+#electivesWrap{position:relative; z-index:1;}
+#electivesIntro{
+  max-width:900px; margin:8px auto 18px; padding:14px 22px; text-align:center;
+  color:var(--ink-dim); font-size:.85rem; line-height:1.5;
+}
+#electivesIntro strong{color:var(--gold);}
+#clusters{position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:22px; padding:0 24px 40px;}
+.cluster{
+  background:rgba(255,255,255,.02); border:1px solid var(--border); border-radius:14px;
+  padding:14px 16px 4px;
+}
+.cluster-head{display:flex; align-items:baseline; gap:8px; margin-bottom:10px;}
+.cluster-head .dept-chip{
+  font-family:'Cinzel',serif; font-weight:700; font-size:.85rem; padding:3px 10px; border-radius:20px;
+  border:1.5px solid; letter-spacing:1px;
+}
+.cluster-head .dept-count{font-size:.7rem; color:var(--ink-faint); font-weight:600;}
+.cluster-nodes{display:flex; flex-wrap:wrap; gap:14px;}
+.cluster-nodes .node{margin-bottom:14px;}
+
+#electivesSection[hidden]{display:none;}
+.section-divider{
+  display:flex; align-items:center; gap:14px; max-width:1200px; margin:8px auto 4px; padding:0 24px;
+}
+.section-divider .line{flex:1; height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent);}
+.section-divider .label{font-family:'Cinzel',serif; color:var(--gold); font-size:1rem; letter-spacing:1px; white-space:nowrap;}
+
+/* ---------- TOOLTIP ---------- */
+#tooltip{
+  position:fixed; z-index:50; max-width:300px;
+  background:linear-gradient(160deg,#1c1f33,#12141f);
+  border:1px solid var(--gold); border-radius:10px; padding:12px 14px;
+  box-shadow:0 8px 30px rgba(0,0,0,.55), 0 0 20px rgba(232,184,61,.15);
+  pointer-events:none; opacity:0; transition:opacity .12s ease;
+  font-size:.82rem; line-height:1.45;
+}
+#tooltip.show{opacity:1;}
+#tooltip h4{margin:0 0 4px; font-family:'Cinzel',serif; color:var(--gold); font-size:.85rem;}
+#tooltip .tt-meta{color:var(--ink-dim); font-size:.72rem; margin-bottom:6px;}
+#tooltip .tt-section{margin-top:6px;}
+#tooltip .tt-label{font-size:.65rem; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-faint); font-weight:700;}
+#tooltip .tt-list{margin:2px 0 0; font-size:.76rem; color:var(--ink);}
+#tooltip .warn{color:#ffb3ba;}
+#tooltip .ok{color:#8fffb8;}
+#tooltip .ext{color:var(--ink-faint);}
+
+footer{
+  position:relative; z-index:1;
+  text-align:center; padding:18px; color:var(--ink-faint); font-size:.72rem;
+  border-top:1px solid var(--border);
+}
+
+::-webkit-scrollbar{height:10px; width:10px;}
+::-webkit-scrollbar-track{background:var(--bg-1);}
+::-webkit-scrollbar-thumb{background:#33364f; border-radius:6px;}
+::-webkit-scrollbar-thumb:hover{background:#454869;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-emblem">🧬</div>
+    <div>
+      <h1>Árvore de Habilidades</h1>
+      <p>Licenciatura em Ciências Biológicas — UFV</p>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Obrigatórias concluídas</div>
+      <div class="stat-value" id="statCourses">0 / 0</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFillMand" style="width:0%"></div></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Horas obrigatórias</div>
+      <div class="stat-value" id="statHours">0h / 2685h</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Horas optativas</div>
+      <div class="stat-value" id="statElectiveHours">0h / 500h</div>
+      <div class="progress-bar"><div class="progress-fill elective" id="progressFillElec" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input id="search" type="text" placeholder="Buscar matéria ou código...">
+    <button id="simulateToggle" title="Planeje o futuro sem salvar">Modo Simulação</button>
+    <button id="electivesToggle">Mostrar Optativas (153)</button>
+    <button id="clearPlanned">Limpar simulação</button>
+    <button id="resetProgress" class="danger">Resetar progresso</button>
+  </div>
+</header>
+
+<div class="legend-bar">
+  <div class="legend-group">
+    <span class="legend-title">Status</span>
+    <span class="legend-item"><span class="legend-node" style="border-color:var(--green); background:#163827;"></span>Concluída</span>
+    <span class="legend-item"><span class="legend-node" style="border-color:var(--gold); background:#1c1f33;"></span>Disponível</span>
+    <span class="legend-item"><span class="legend-node" style="border-color:var(--blue); border-style:dashed; background:#16263d;"></span>Planejada (simulação)</span>
+    <span class="legend-item"><span class="legend-node" style="border-color:#3a3d55; filter:grayscale(1) brightness(.6);"></span>🔒 Bloqueada</span>
+  </div>
+  <div class="legend-group">
+    <span class="legend-title">Cor do nó</span>
+    <span class="legend-item">= Departamento da disciplina (mesma cor = mesmo departamento)</span>
+  </div>
+  <div class="legend-group">
+    <span class="legend-title">Dica</span>
+    <span class="legend-item">Clique numa disciplina disponível para marcar como concluída · passe o mouse para ver pré-requisitos e o que ela libera · "*" indica correquisito</span>
+  </div>
+</div>
+
+<div class="section-divider" style="margin-top:20px;">
+  <span class="line"></span><span class="label">Sequência Sugerida (Obrigatórias)</span><span class="line"></span>
+</div>
+
+<div id="board">
+  <div id="content">
+    <svg id="edges"></svg>
+    <div id="columns"></div>
+  </div>
+</div>
+
+<div id="electivesSection" hidden>
+  <div class="section-divider">
+    <span class="line"></span><span class="label">Disciplinas Optativas</span><span class="line"></span>
+  </div>
+  <div id="electivesIntro">
+    O currículo exige <strong>500 horas</strong> em disciplinas optativas, escolhidas livremente entre as opções abaixo
+    (organizadas por departamento). Muitas delas também têm pré-requisitos — inclusive disciplinas da grade obrigatória —
+    então elas continuam conectadas à árvore principal por setas.
+  </div>
+  <div id="clusters"></div>
+</div>
+
+<div id="tooltip"></div>
+
+<footer>Dados extraídos do Catálogo de Graduação da UFV — Licenciatura em Ciências Biológicas (campus Viçosa, 2026) · progresso salvo apenas no seu navegador (localStorage)</footer>
+
+<script>
+/* =========================================================
+   DADOS DO CURRÍCULO — Licenciatura em Ciências Biológicas (UFV)
+   ========================================================= */
+
+// [codigo, nome, horas, periodo(1-10 ou null p/ optativa), prereqRaw, elective]
+const RAW_MANDATORY = [
+  // 1º período
+  ['BAN200','Zoologia dos Invertebrados I',60,1,'BIO 111* e BIO 112*'],
+  ['BIO105','Seminário de Integração e Reflexão',15,1,''],
+  ['BIO111','Biologia da Célula Eucariota',30,1,'BIO 112*'],
+  ['BIO112','Laboratório de Biologia Celular',30,1,'BIO 111* ou BIO 113*'],
+  ['CCB110','Noções de Taxonomia e Sistemática Biológica',30,1,''],
+  ['QUI100','Química Geral',45,1,''],
+  // 2º período
+  ['BAN201','Zoologia dos Invertebrados II',60,2,'BAN 200'],
+  ['BQI101','Laboratório de Bioquímica I',30,2,'BQI 100* ou BQI 103* ou BQI 200*'],
+  ['BQI103','Bioquímica I',75,2,''],
+  ['BVE202','Biologia e Ecologia de Algas e Briófitas',45,2,''],
+  ['EDU117','Psicologia do Desenvolvimento da Aprendizagem',60,2,''],
+  ['QUI107','Laboratório de Química Geral',30,2,'QUI 100* ou QUI 121*'],
+  // 3º período
+  ['BAN202','Zoologia dos Cordados I',60,3,'BAN 201'],
+  ['BIO221','Histologia Básica',60,3,'BIO 111 e BIO 112'],
+  ['BVE213','Plantas Vasculares: Células e Tecidos',30,3,'BIO 111 e BIO 112'],
+  ['EDU144','Estrutura e Funcionamento do Ensino Fundamental e Médio',60,3,''],
+  ['MAT146','Cálculo I',60,3,''],
+  // 4º período
+  ['BAN203','Zoologia dos Cordados II',60,4,'BAN 202'],
+  ['BIO222','Embriologia Básica',60,4,'BIO 221'],
+  ['BVE214','Plantas Vasculares: Biologia e Anatomia',60,4,'BVE 213'],
+  ['EDU155','Didática',60,4,'EDU 117'],
+  ['EST105','Iniciação à Estatística',60,4,'MAT 140 ou MAT 141 ou MAT 146'],
+  // 5º período
+  ['BAN234','Fisiologia Animal',60,5,'BAN 203 e (BQI 103 ou BQI 100)'],
+  ['BIO240','Genética',60,5,'(BIO 111 ou BIO 113) e BIO 112'],
+  ['BVE230','Organografia e Sistemática das Espermatófitas',75,5,''],
+  ['FIS101','Fundamentos de Física para Ciências Biológicas',60,5,'MAT 146'],
+  ['MBI103','Microbiologia Geral',30,5,'(((BIO 111 ou BIO 113) e BIO 112) ou BIO 120) e (BQI 100 ou BQI 103 ou BQI 211)'],
+  ['MBI104','Práticas em Microbiologia',30,5,'MBI 103*'],
+  // 6º período
+  ['BAN210','Anatomia Humana',60,6,'(BIO 111* e BIO 112*) ou BIO 120*'],
+  ['BAN281','Fundamentos de Geologia e Paleontologia',60,6,'BAN 203 e BVE 230* e BIO 340*'],
+  ['BIO340','Evolução Orgânica',60,6,'BIO 240'],
+  ['BIO480','Metodologia do Ensino de Ciências e Biologia I',90,6,'EDU 155'],
+  ['FIS198','Conceitos de Astronomia para Professores do Ensino Fundamental',30,6,''],
+  ['MBI301','Biologia de Fungos',30,6,'MBI 102 ou (MBI 103 e MBI 104)'],
+  // 7º período
+  ['BIO251','Fundamentos de Imunologia',30,7,'MBI 103* ou BQI 103*'],
+  ['BIO481','Metodologia do Ensino de Ciências e Biologia II',90,7,'BIO 480'],
+  ['BIO483','Estágio Supervisionado em Educação em Ciências',135,7,'BIO 480'],
+  ['BVE270','Fisiologia Vegetal',90,7,'(BVE 210 ou BVE 212 ou (BVE 213 e BVE 214)) e (BQI 100 ou BQI 103 ou BQI 211)'],
+  ['CCB335','Ecologia e Biogeografia',60,7,''],
+  // 8º período
+  ['BIO311','Biologia Molecular I',60,8,'(BIO 111 ou BIO 113) e (BQI 100 ou BQI 103 ou BQI 211)'],
+  ['BIO484','Estágio Supervisionado em Educação em Biologia',135,8,'BIO 481 e BIO 483'],
+  ['EDU236','Sociologia da Educação',60,8,''],
+  ['LET290','Língua Brasileira de Sinais (Libras)',45,8,''],
+  // 9º período
+  ['BIO336','Práticas em Ecologia',30,9,'BIO 340 e CCB 335*'],
+  ['NUT490','Bioética',30,9,''],
+  // 10º período
+  ['BIO485','Estágio Supervisionado em Educação para Diversidade Social',135,10,'BIO 484'],
+  ['EDU227','Concepção Filosófica da Educação',60,10,''],
+];
+
+const RAW_ELECTIVES = [
+  ['ADM100','Introdução à Administração',60,''],
+  ['ADM392','Empreendedorismo',60,''],
+  ['BAN205','Técnica de Coleta de Vertebrados',90,'BAN 203*'],
+  ['BAN207','Mastozoologia',60,'BAN 203 ou BAN 100'],
+  ['BAN208','Ornitologia',60,'BAN 100 ou BAN 203'],
+  ['BAN209','Caça e Conservação',60,''],
+  ['BAN217','Anatomia Comparada dos Cordados',60,'BAN 203'],
+  ['BAN232','Fisiologia Humana',75,'(BAN 210 ou EFG 102*) e (BQI 100 ou BQI 103 ou BQI 211) e (BIO 220* ou BIO 221*)'],
+  ['BAN237','Fisiologia Animal Comparativa',90,'BAN 234'],
+  ['BAN240','Patologia Geral',60,'BAN 232'],
+  ['BAN300','Comportamento Animal',60,''],
+  ['BAN315','Ictiologia',60,'BAN 202'],
+  ['BAN350','Ictiologia, Limnologia e Piscicultura',60,''],
+  ['BAN450','Ecofisiologia de Anfíbios',60,''],
+  ['BAN460','Ranicultura',60,''],
+  ['BAN461','Tópicos Especiais I',0,''],
+  ['BAN462','Tópicos Especiais II',0,''],
+  ['BAN463','Tópicos Especiais III',0,''],
+  ['BAN470','Projetos de Práticas Didáticas em Biologia Animal',60,'BIO 480 e BAN 203'],
+  ['BAN471','Projetos de Extensão em Biologia Animal',60,'BAN 203 e BAN 234'],
+  ['BIO134','Fundamentos em Ecologia',45,''],
+  ['BIO200','Biofísica',75,'BIO 111* e BIO 112*'],
+  ['BIO241','Laboratório de Genética Básica',60,'BIO 240*'],
+  ['BIO243','Genética de Populações',60,'BIO 240'],
+  ['BIO244','Genética Humana',45,''],
+  ['BIO250','Imunologia',60,'MBI 103 ou BQI 103 ou (MED 101 e MED 131)'],
+  ['BIO270','Virologia Geral e Molecular',90,''],
+  ['BIO300','Impactos Biológicos da Poluição Ambiental',60,''],
+  ['BIO312','Biologia Molecular II',90,'BIO 311'],
+  ['BIO331','Biodiversidade',75,'BIO 335 ou CCB 335'],
+  ['BIO333','Ecologia de Campo',90,'(BIO 335 ou CCB 335) e BIO 336'],
+  ['BIO334','Ecologia de Populações',75,'(BIO 335 ou CCB 335) e BIO 336'],
+  ['BIO342','Genética Quantitativa',60,'BIO 240 e EST 105'],
+  ['BIO343','Genética do Comportamento',60,'BIO 240 ou BIO 244'],
+  ['BIO344','Genotoxicidade',60,'BIO 240'],
+  ['BIO411','Biologia Celular II',30,'BIO 111 e BIO 112'],
+  ['BIO420','Histologia Especial',60,'BIO 220 ou BIO 221'],
+  ['BIO421','Biologia do Desenvolvimento',45,'BIO 311'],
+  ['BIO440','Genética da Conservação da Biodiversidade Vegetal',60,'BIO 240'],
+  ['BIO442','Citogenética',60,'BIO 240'],
+  ['BIO461','Tópicos em Biologia I',15,''],
+  ['BIO462','Tópicos em Biologia II',30,''],
+  ['BIO463','Tópicos em Biologia III',45,''],
+  ['BIO470','Projetos de Práticas Didáticas em Biologia Celular, Embriologia e Histologia',60,'BIO 221 e BIO 222 e BIO 480'],
+  ['BIO471','Projetos de Práticas Didáticas em Ecologia e Evolução',60,'BIO 340*'],
+  ['BIO472','Projetos de Práticas Didáticas em Genética e Biologia Molecular',60,'BIO 480 e BIO 240'],
+  ['BIO473','Projetos de Extensão em Biologia Geral',60,''],
+  ['BIO498','Estágio Curricular',360,'1500 tot'],
+  ['BQI211','Bioquímica Metabólica e Bioenergética',90,'BQI 200 ou BQI 100 ou BQI 103'],
+  ['BQI220','Enzimologia',45,'BQI 100 ou BQI 103 ou BQI 200'],
+  ['BQI230','Bioquímica Celular',60,'BQI 100 ou BQI 103 ou BQI 211'],
+  ['BQI241','Bioquímica Fisiológica',60,'BQI 100 ou BQI 103 ou BQI 211'],
+  ['BQI406','Bioquímica e Toxicologia Forenses',60,'(BQI 211 ou BQI 100 ou BQI 103) e (BQI 230 ou BIO 311) e (QUI 100 ou (QUI 121 e QUI 107))'],
+  ['BQI460','Bioinformática',60,'BIO 311* ou BQI 430*'],
+  ['BVE240','Ecologia Vegetal',60,'BIO 111 e BIO 112'],
+  ['BVE271','Ecofisiologia da Produção Vegetal',45,'BVE 270'],
+  ['BVE300','Biologia de Criptógamas',60,'BVE 202'],
+  ['BVE310','Diversidade Estrutural em Plantas',75,'BVE 212 ou BVE 214'],
+  ['BVE319','Cultura de Tecidos Vegetais',60,'(BVE 210 ou BVE 212 ou BVE 214) e BVE 270'],
+  ['BVE330','Taxonomia Experimental de Plantas',60,'BVE 230'],
+  ['BVE331','Sistemática Evolutiva das Angiospermas',60,'BIO 340 e BVE 230'],
+  ['BVE370','Fisiologia do Estresse em Plantas',45,'BVE 270'],
+  ['BVE371','Controle de Processos Fisiológicos em Plantas',45,'BVE 270 e BIO 311'],
+  ['BVE400','Seminário em Botânica',15,''],
+  ['BVE430','Projetos de Extensão em Educação Ambiental e Sistemática Vegetal',60,'BVE 202 ou BVE 230'],
+  ['BVE444','O Mundo Microscópico das Plantas e os Serviços Ecossistêmicos',60,''],
+  ['BVE445','Vegetações Brasileiras',60,''],
+  ['BVE470','Projetos de Práticas Didáticas em Biologia Vegetal',60,'BIO 480 e BVE 230 e BVE 214 e BVE 270'],
+  ['CCB170','Introdução à Extensão Universitária',30,''],
+  ['CCB470','Atividades de Extensão para Ciências Biológicas',180,''],
+  ['CCB480','Atividades Complementares para Ciências Biológicas I',90,''],
+  ['CCB481','Atividades Complementares para Ciências Biológicas II',60,''],
+  ['CCB482','Atividades Complementares para Ciências Biológicas III',30,''],
+  ['CIS214','Sociologia',60,''],
+  ['CIS234','Antropologia',60,''],
+  ['COM261','Fotografia',60,''],
+  ['DIR130','Instituições de Direito',60,''],
+  ['DIR140','Legislação Ambiental I',30,'DIR 130 ou DIR 138'],
+  ['EAB340','Gerenciamento de Resíduos Sólidos',60,'CIV 336 ou CIV 332 ou EAB 343* ou ENF 388 ou ENQ 270'],
+  ['EAB342','Introdução ao Tratamento de Águas Residuárias',60,'(EAB 341 e MAT 147 e BQI 100) ou (EAB 345 e EAB 349) ou MBI 460'],
+  ['EDU127','Filosofia da Ciência',60,''],
+  ['EDU133','Educação e Realidade Brasileira',60,''],
+  ['EDU154','Educação CTS',60,''],
+  ['EDU156','Neuroeducação: Contribuições das Neurociências para a Prática Pedagógica',60,''],
+  ['EDU191','Infância e Adolescência no Brasil',60,''],
+  ['EDU195','Eticidade para Educadores',75,''],
+  ['EDU223','História da Educação Brasileira',90,''],
+  ['EDU240','Economia e Educação',60,''],
+  ['EDU292','Estudos do Cotidiano Escolar',60,''],
+  ['EDU332','Corpo, Gênero, Sexualidade e Educação',60,''],
+  ['EDU350','Tecnologias na Educação',60,''],
+  ['EDU387','Pesquisa Social em Educação',60,''],
+  ['EDU389','Metodologias Investigativas na Formação de Professores',60,''],
+  ['EDU432','Geopolítica Internacional e Educação Brasileira',60,''],
+  ['EDU433','Relações Raciais no Brasil Contemporâneo e Educação',60,''],
+  ['EDU434','Educação Integral e(m) Tempo Integral no Brasil',60,''],
+  ['EDU435','Inclusão e Aprendizagem',60,''],
+  ['EDU448','Educação de Nível Médio no Brasil: História e Políticas',60,''],
+  ['EDU495','EJA e Diversidade',60,''],
+  ['EFG116','Parasitologia Humana',60,''],
+  ['ENF300','Dendrologia',75,'BVE 230'],
+  ['ENF305','Ecologia e Restauração Florestal',60,'(((BIO 335 ou CCB 335) e BIO 336) ou BIO 131) e BVE 270*'],
+  ['ENF386','Educação e Interpretação Ambiental',60,''],
+  ['ENF388','Gestão Ambiental',60,''],
+  ['ENF389','Manejo de Fauna Silvestre',60,'ENF 305 ou BIO 131 ou BIO 134'],
+  ['ENF391','Recuperação de Áreas Degradadas',60,'SOL 215 ou (BIO 131 e SOL 380) ou BIO 336 ou SOL 491 ou SOL 375'],
+  ['ENF482','Unidades de Conservação',60,''],
+  ['ENT160','Entomologia Geral',60,'BAN 100 ou BAN 200'],
+  ['ENT366','Biologia e Controle de Formigas Cortadeiras',60,'ENT 160 ou BAN 201 ou ENT 367'],
+  ['ENT369','Fundamentos de Ecotoxicologia',45,'(BIO 111 ou BIO 113) e BIO 112 e QUI 138 e (EST 103 ou EST 105 ou EST 106)'],
+  ['ENT375','Apicultura',60,''],
+  ['ERU324','Metodologia de Pesquisa',60,''],
+  ['EST220','Estatística Experimental',60,'EST 103 ou EST 105 ou EST 106'],
+  ['FIP310','Micologia',60,''],
+  ['FIS191','Introdução à Mecânica',45,'MAT 140* ou MAT 146*'],
+  ['FIS192','Introdução às Ondas e à Ótica',45,'FIS 201 ou FIS 191'],
+  ['FIS193','Introdução aos Fluidos e à Termodinâmica',45,'FIS 191*'],
+  ['FIS194','Introdução ao Eletromagnetismo',45,'FIS 191* ou FIS 201'],
+  ['FIS494','Fundamentos do Mergulho Autônomo (SCUBA)',90,'GEO 490'],
+  ['FIT370','Melhoramento de Plantas',60,'BIO 240 e EST 220'],
+  ['FIT464','Plantas Medicinais e Aromáticas',60,'BVE 270 ou BQI 247'],
+  ['FIT469','Fundamentos das Ultradiluições',45,''],
+  ['GEO250','Biogeografia e Transformação da Paisagem',60,''],
+  ['GEO377','Cartografia Escolar',60,''],
+  ['GEO490','Fundamentos do Mergulho Livre',90,''],
+  ['INF100','Introdução à Programação I',60,''],
+  ['INF103','Introdução à Informática',60,''],
+  ['INF121','Inteligência Artificial Aplicada I',60,'(INF 100 ou INF 116 ou ENG 390) e (EST 100 ou EST 105 ou EST 106)'],
+  ['LET215','Inglês I',60,''],
+  ['MAT101','Matemática Básica',60,''],
+  ['MBI130','Microbiologia dos Alimentos',60,'MBI 102 ou (MBI 103 e MBI 104)'],
+  ['MBI150','Microbiologia do Solo',60,'MBI 102 ou (MBI 103 e MBI 104)'],
+  ['MBI300','Bacteriologia Geral',45,'MBI 102 ou (MBI 103 e MBI 104)'],
+  ['MBI302','Práticas em Biologia de Fungos',30,'MBI 301*'],
+  ['MBI310','Fisiologia de Microrganismos',45,'MBI 102 ou MBI 103'],
+  ['MBI390','Laboratório de Fisiologia e Genética de Microrganismos',60,'MBI 310 ou (MBI 320 e MBI 104)'],
+  ['MBI410','Fisiologia de Cianobactérias',45,'MBI 102 ou (MBI 103 e MBI 104)'],
+  ['MBI440','Microbiologia Industrial e Biotecnologia',45,'MBI 102 ou MBI 103'],
+  ['MBI460','Microbiologia Ambiental',45,'MBI 102 ou MBI 103'],
+  ['MBI461','Biotecnologia Ambiental',30,'MBI 102 ou MBI 103'],
+  ['MBI462','Microbiologia de Águas e Efluentes',45,'MBI 102 ou (MBI 103 e MBI 104)'],
+  ['MBI470','Projetos de Práticas Didáticas em Microbiologia',60,'BIO 480 e (MBI 103 e MBI 104)'],
+  ['MBI471','Projetos de Extensão em Microbiologia',60,'MBI 102 ou (MBI 103 e MBI 104)'],
+  ['MBI480','Microbiologia Médica',45,'MBI 102 ou (MBI 103 e MBI 104)'],
+  ['MBI481','Diagnóstico Laboratorial na Microbiologia Clínica',45,'MBI 102 ou (MBI 103 e MBI 104) ou MED 211'],
+  ['PRE431','Encontro de Saberes e Práticas Educativas',60,''],
+  ['QUI112','Química Analítica Aplicada',45,'QUI 100 ou (QUI 121 e QUI 107)'],
+  ['QUI119','Laboratório de Química Analítica Aplicada',30,'QUI 112*'],
+  ['QUI138','Fundamentos de Química Orgânica',45,''],
+  ['QUI139','Laboratório de Química Orgânica',30,'QUI 138*'],
+  ['SOL215','Geologia e Pedologia',75,'QUI 100 ou (QUI 121 e (QUI 107 ou QUI 104))'],
+  ['SOL220','Gênese do Solo',60,''],
+  ['TAL414','Microbiologia do Leite e Derivados',90,'MBI 103* e MBI 104*'],
+];
+
+/* =========================================================
+   PARSER DE PRÉ-REQUISITOS (suporta "e" / "ou" / parênteses / "*" / "N tot")
+   ========================================================= */
+function tokenizePrereq(raw){
+  if(!raw || !raw.trim()) return [];
+  let s = raw.replace(/\(/g,' ( ').replace(/\)/g,' ) ').trim();
+  let words = s.split(/\s+/);
+  let tokens = [];
+  for(let i=0;i<words.length;i++){
+    let w = words[i];
+    if(/^[A-Z]{2,4}$/.test(w) && words[i+1] && /^\d{3}\*?$/.test(words[i+1])){
+      const coreq = words[i+1].endsWith('*');
+      const num = words[i+1].replace('*','');
+      tokens.push({t:'CODE', code:w+num, coreq});
+      i++;
+    } else if(/^\d+$/.test(w) && words[i+1] && /^tot\.?$/i.test(words[i+1])){
+      tokens.push({t:'HOURS', value:parseInt(w,10)});
+      i++;
+    } else if(w==='('){ tokens.push({t:'LP'}); }
+    else if(w===')'){ tokens.push({t:'RP'}); }
+    else if(/^ou$/i.test(w)){ tokens.push({t:'OR'}); }
+    else if(/^e$/i.test(w)){ tokens.push({t:'AND'}); }
+  }
+  return tokens;
+}
+function parsePrereq(raw){
+  const tokens = tokenizePrereq(raw);
+  if(!tokens.length) return null;
+  let pos = 0;
+  const peek = ()=>tokens[pos];
+  function parseExpr(){
+    let node = parseTerm();
+    while(peek() && peek().t==='OR'){
+      pos++;
+      const rhs = parseTerm();
+      node = {t:'OR', items: node.t==='OR' ? node.items.concat([rhs]) : [node, rhs]};
+    }
+    return node;
+  }
+  function parseTerm(){
+    let node = parseFactor();
+    while(peek() && peek().t==='AND'){
+      pos++;
+      const rhs = parseFactor();
+      node = {t:'AND', items: node.t==='AND' ? node.items.concat([rhs]) : [node, rhs]};
+    }
+    return node;
+  }
+  function parseFactor(){
+    const tk = peek();
+    if(!tk) return {t:'AND', items:[]};
+    if(tk.t==='LP'){ pos++; const n = parseExpr(); if(peek() && peek().t==='RP') pos++; return n; }
+    if(tk.t==='CODE'){ pos++; return {t:'CODE', code:tk.code, coreq:tk.coreq}; }
+    if(tk.t==='HOURS'){ pos++; return {t:'HOURS', value:tk.value}; }
+    pos++; return {t:'AND', items:[]};
+  }
+  return parseExpr();
+}
+function collectCodes(node, out){
+  out = out || [];
+  if(!node) return out;
+  if(node.t==='CODE'){ if(!out.includes(node.code)) out.push(node.code); }
+  else if(node.items){ node.items.forEach(n=>collectCodes(n, out)); }
+  return out;
+}
+
+/* =========================================================
+   MONTAGEM DO CATÁLOGO
+   ========================================================= */
+const COURSES = [];
+RAW_MANDATORY.forEach(([code,name,hours,period,prereqRaw])=>{
+  COURSES.push({code,name,hours,period,elective:false,prereqRaw,dept:code.match(/^[A-Z]+/)[0]});
+});
+RAW_ELECTIVES.forEach(([code,name,hours,prereqRaw])=>{
+  COURSES.push({code,name,hours,period:null,elective:true,prereqRaw,dept:code.match(/^[A-Z]+/)[0]});
+});
+
+const byCode = {};
+COURSES.forEach(c=>{
+  byCode[c.code] = c;
+  c.prereqTree = parsePrereq(c.prereqRaw);
+  c.prereqCodes = collectCodes(c.prereqTree).filter(code=>code!==c.code);
+  c.unlocks = [];
+});
+COURSES.forEach(c=>{
+  c.prereqCodes.forEach(code=>{
+    if(byCode[code]) byCode[code].unlocks.push(c.code);
+  });
+});
+
+const TOTAL_MANDATORY_HOURS = COURSES.filter(c=>!c.elective).reduce((s,c)=>s+c.hours,0);
+const ELECTIVE_TARGET_HOURS = 500;
+
+/* =========================================================
+   ESTADO
+   ========================================================= */
+const LS_KEY = 'ufv-lcb-grade-arvore-v1';
+let completed = new Set(JSON.parse(localStorage.getItem(LS_KEY) || '[]'));
+let planned = new Set();
+let simulateMode = false;
+let electivesVisible = false;
+let hoveredCode = null;
+
+function saveCompleted(){ localStorage.setItem(LS_KEY, JSON.stringify([...completed])); }
+
+function totalCompletedHours(){
+  return [...completed].reduce((s,code)=> s + (byCode[code]? byCode[code].hours : 0), 0);
+}
+function mandatoryCompletedHours(){
+  return [...completed].reduce((s,code)=>{
+    const c = byCode[code];
+    return s + (c && !c.elective ? c.hours : 0);
+  },0);
+}
+function electiveCompletedHours(){
+  return [...completed].reduce((s,code)=>{
+    const c = byCode[code];
+    return s + (c && c.elective ? c.hours : 0);
+  },0);
+}
+
+function effectiveSet(){
+  const s = new Set(completed);
+  planned.forEach(p=>s.add(p));
+  return s;
+}
+
+function evalNode(node, set, hours){
+  if(!node) return true;
+  if(node.t==='CODE'){
+    if(node.coreq) return true; // correquisito: pode ser cursado junto, nunca bloqueia
+    if(!byCode[node.code]) return false; // pré-requisito fora deste catálogo — não verificável, não conta como cumprido
+    return set.has(node.code);
+  }
+  if(node.t==='HOURS') return hours >= node.value;
+  if(node.t==='AND') return node.items.every(n=>evalNode(n,set,hours));
+  if(node.t==='OR') return node.items.length===0 || node.items.some(n=>evalNode(n,set,hours));
+  return true;
+}
+
+function statusOf(code){
+  const c = byCode[code];
+  if(completed.has(code)) return 'done';
+  if(planned.has(code)) return 'planned';
+  const set = effectiveSet();
+  const ok = evalNode(c.prereqTree, set, totalCompletedHours());
+  return ok ? 'available' : 'locked';
+}
+
+/* =========================================================
+   COR POR DEPARTAMENTO
+   ========================================================= */
+const deptColorCache = {};
+function hashHue(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+  return h % 360;
+}
+function deptColor(dept){
+  if(!deptColorCache[dept]) deptColorCache[dept] = `hsl(${hashHue(dept)} 62% 60%)`;
+  return deptColorCache[dept];
+}
+
+/* =========================================================
+   RENDER — sequência obrigatória
+   ========================================================= */
+const columnsEl = document.getElementById('columns');
+const svgEl = document.getElementById('edges');
+const contentEl = document.getElementById('content');
+const tooltipEl = document.getElementById('tooltip');
+const clustersEl = document.getElementById('clusters');
+
+const PERIOD_LABEL = {1:'1º',2:'2º',3:'3º',4:'4º',5:'5º',6:'6º',7:'7º',8:'8º',9:'9º',10:'10º'};
+
+function buildColumns(){
+  columnsEl.innerHTML = '';
+  for(let p=1;p<=10;p++){
+    const list = COURSES.filter(c=>c.period===p);
+    if(!list.length) continue;
+    const hours = list.reduce((s,c)=>s+c.hours,0);
+    const col = document.createElement('div');
+    col.className = 'column';
+    col.innerHTML = `<div class="col-head">
+        <div class="period-num">${PERIOD_LABEL[p]} Período</div>
+        <div class="period-hours">${hours}h</div>
+      </div>`;
+    const listEl = document.createElement('div');
+    list.forEach(c=>listEl.appendChild(buildNode(c)));
+    col.appendChild(listEl);
+    columnsEl.appendChild(col);
+  }
+}
+
+function buildClusters(){
+  clustersEl.innerHTML = '';
+  const byDept = {};
+  COURSES.filter(c=>c.elective).forEach(c=>{
+    (byDept[c.dept] = byDept[c.dept] || []).push(c);
+  });
+  Object.keys(byDept).sort().forEach(dept=>{
+    const list = byDept[dept];
+    const color = deptColor(dept);
+    const card = document.createElement('div');
+    card.className = 'cluster';
+    card.innerHTML = `<div class="cluster-head">
+        <span class="dept-chip" style="color:${color}; border-color:${color};">${dept}</span>
+        <span class="dept-count">${list.length} disciplina${list.length>1?'s':''}</span>
+      </div>`;
+    const nodesWrap = document.createElement('div');
+    nodesWrap.className = 'cluster-nodes';
+    list.forEach(c=>nodesWrap.appendChild(buildNode(c)));
+    card.appendChild(nodesWrap);
+    clustersEl.appendChild(card);
+  });
+}
+
+function buildNode(course){
+  const el = document.createElement('div');
+  el.className = 'node';
+  el.dataset.code = course.code;
+  const color = deptColor(course.dept);
+  el.innerHTML = `
+    <div class="area-tab" style="background:${color};"></div>
+    <div class="top-row">
+      <span class="code">${course.code}</span>
+      <span class="status-icon"></span>
+    </div>
+    <div class="name">${course.name}</div>
+    <div class="bottom-row">
+      <span class="hours">${course.hours}h</span>
+      <span class="area-badge" style="color:${color}; border:1px solid ${color};">${course.dept}</span>
+    </div>
+  `;
+  el.addEventListener('click', ()=>onNodeClick(course.code));
+  el.addEventListener('mouseenter', ()=>onNodeHover(course.code));
+  el.addEventListener('mouseleave', ()=>onNodeLeave());
+  el.addEventListener('mousemove', (e)=>positionTooltip(e));
+  return el;
+}
+
+const STATUS_ICON = { done:'✔', available:'⭐', locked:'🔒', planned:'⏳' };
+
+function refreshNodes(){
+  document.querySelectorAll('.node').forEach(el=>{
+    const code = el.dataset.code;
+    const status = statusOf(code);
+    el.classList.remove('done','available','locked','planned');
+    el.classList.add(status);
+    el.querySelector('.status-icon').textContent = STATUS_ICON[status];
+  });
+  const totalMandatory = COURSES.filter(c=>!c.elective).length;
+  const doneMandatory = COURSES.filter(c=>!c.elective && completed.has(c.code)).length;
+  document.getElementById('statCourses').textContent = `${doneMandatory} / ${totalMandatory}`;
+  const mh = mandatoryCompletedHours();
+  document.getElementById('statHours').textContent = `${mh}h / ${TOTAL_MANDATORY_HOURS}h`;
+  document.getElementById('progressFillMand').style.width = Math.min(100, mh/TOTAL_MANDATORY_HOURS*100).toFixed(1)+'%';
+  const eh = electiveCompletedHours();
+  document.getElementById('statElectiveHours').textContent = `${eh}h / ${ELECTIVE_TARGET_HOURS}h`;
+  document.getElementById('progressFillElec').style.width = Math.min(100, eh/ELECTIVE_TARGET_HOURS*100).toFixed(1)+'%';
+}
+
+/* ---------- Edges (SVG) ---------- */
+function isVisible(el){
+  return !!el && el.offsetParent !== null;
+}
+function edgeColor(fromCode, toCode){
+  const fromDone = completed.has(fromCode);
+  const toDone = completed.has(toCode);
+  const toPlanned = planned.has(toCode);
+  if(fromDone && toDone) return {stroke:'#3ddc84', width:2.2, dash:'', marker:'arrow-green', op:.85};
+  if((fromDone||planned.has(fromCode)) && toPlanned) return {stroke:'#4aa8ff', width:2, dash:'6,4', op:.85, marker:'arrow-blue'};
+  if(fromDone && !toDone) return {stroke:'#e8b83d', width:1.8, dash:'', op:.7, marker:'arrow-gold'};
+  return {stroke:'#454864', width:1.2, dash:'4,4', op:.35, marker:'arrow-gray'};
+}
+
+function drawEdges(){
+  const cRect = contentEl.getBoundingClientRect();
+  const w = contentEl.scrollWidth;
+  const h = contentEl.scrollHeight;
+  svgEl.setAttribute('width', w);
+  svgEl.setAttribute('height', h);
+  svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
+
+  let markers = `<defs>
+    ${['green','blue','gold','gray'].map(name=>{
+      const color = {green:'#3ddc84',blue:'#4aa8ff',gold:'#e8b83d',gray:'#454864'}[name];
+      return `<marker id="arrow-${name}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="${color}"></path>
+      </marker>`;
+    }).join('')}
+  </defs>`;
+
+  let paths = '';
+  COURSES.forEach(course=>{
+    const toEl = document.querySelector(`.node[data-code="${course.code}"]`);
+    if(!isVisible(toEl)) return;
+    course.prereqCodes.forEach(pCode=>{
+      const fromEl = document.querySelector(`.node[data-code="${pCode}"]`);
+      if(!isVisible(fromEl)) return;
+      const fr = fromEl.getBoundingClientRect();
+      const tr = toEl.getBoundingClientRect();
+      const x1 = fr.right - cRect.left;
+      const y1 = fr.top + fr.height/2 - cRect.top;
+      const x2 = tr.left - cRect.left;
+      const y2 = tr.top + tr.height/2 - cRect.top;
+      const dx = Math.max(40, Math.abs(x2-x1)*0.45);
+      const c = edgeColor(pCode, course.code);
+      const highlighted = hoveredCode && (hoveredCode===pCode || hoveredCode===course.code);
+      const dimmed = hoveredCode && !highlighted;
+      paths += `<path d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}"
+        fill="none" stroke="${c.stroke}" stroke-width="${highlighted? c.width+1.4 : c.width}"
+        stroke-dasharray="${c.dash}" opacity="${dimmed? 0.1 : (highlighted? 1: c.op)}"
+        marker-end="url(#${c.marker})"></path>`;
+    });
+  });
+
+  svgEl.innerHTML = markers + paths;
+}
+
+function redrawAll(){
+  refreshNodes();
+  requestAnimationFrame(drawEdges);
+}
+
+/* =========================================================
+   INTERAÇÃO
+   ========================================================= */
+function onNodeClick(code){
+  const status = statusOf(code);
+  const el = document.querySelector(`.node[data-code="${code}"]`);
+
+  if(status==='locked'){
+    el.classList.remove('locked-shake');
+    void el.offsetWidth;
+    el.classList.add('locked-shake');
+    return;
+  }
+
+  if(simulateMode){
+    if(status==='planned') planned.delete(code);
+    else if(status==='available') planned.add(code);
+  } else {
+    if(status==='done') completed.delete(code);
+    else if(status==='available'){ completed.add(code); planned.delete(code); }
+    saveCompleted();
+  }
+  redrawAll();
+  if(hoveredCode===code) showTooltip(code);
+}
+
+function onNodeHover(code){
+  hoveredCode = code;
+  document.querySelectorAll('.node').forEach(el=>el.classList.remove('hl-source','hl-prereq','hl-unlock'));
+  const course = byCode[code];
+  const self = document.querySelector(`.node[data-code="${code}"]`);
+  self.classList.add('hl-source');
+  course.prereqCodes.forEach(p=>{
+    const n = document.querySelector(`.node[data-code="${p}"]`);
+    if(n) n.classList.add('hl-prereq');
+  });
+  course.unlocks.forEach(u=>{
+    const n = document.querySelector(`.node[data-code="${u}"]`);
+    if(n) n.classList.add('hl-unlock');
+  });
+  drawEdges();
+  showTooltip(code);
+}
+
+function onNodeLeave(){
+  hoveredCode = null;
+  document.querySelectorAll('.node').forEach(el=>el.classList.remove('hl-source','hl-prereq','hl-unlock'));
+  drawEdges();
+  hideTooltip();
+}
+
+function renderPrereqNode(node, set, hours, depth){
+  if(!node) return '<span class="tt-list ok">Nenhum</span>';
+  if(node.t==='CODE'){
+    const known = !!byCode[node.code];
+    const label = known ? byCode[node.code].name : node.code;
+    if(node.coreq){
+      // correquisito: nunca bloqueia, apenas informativo
+      const done = known && set.has(node.code);
+      return `<div class="ext">${done?'✔':'◦'} ${label} (correquisito — pode cursar junto, não bloqueia)</div>`;
+    }
+    if(!known){
+      return `<div class="ext">◦ ${node.code} — fora deste catálogo (não conta como cumprido)</div>`;
+    }
+    const met = set.has(node.code);
+    return `<div class="${met?'ok':'warn'}">${met?'✔':'✖'} ${label}</div>`;
+  }
+  if(node.t==='HOURS'){
+    const met = hours >= node.value;
+    return `<div class="${met?'ok':'warn'}">${met?'✔':'✖'} ${node.value}h cursadas no total (você tem ${hours}h)</div>`;
+  }
+  const items = node.items.map(n=>renderPrereqNode(n, set, hours, depth+1));
+  const glue = node.t==='AND' ? 'e' : 'ou';
+  if(node.items.length<=1) return items.join('');
+  return `<div style="margin-left:${depth?10:0}px;">` + items.join(`<div style="color:var(--ink-faint); font-size:.68rem; margin:1px 0 1px 4px;">${glue}</div>`) + `</div>`;
+}
+
+function showTooltip(code){
+  const course = byCode[code];
+  const status = statusOf(code);
+  const color = deptColor(course.dept);
+  const set = effectiveSet();
+
+  const prereqHtml = course.prereqTree ? renderPrereqNode(course.prereqTree, set, totalCompletedHours(), 0) : '<span class="tt-list ok">Nenhum</span>';
+
+  let unlocksHtml = '<span class="tt-list">Nenhuma</span>';
+  if(course.unlocks.length){
+    unlocksHtml = '<div class="tt-list">' + course.unlocks.map(u=>`<div>→ ${byCode[u].name}</div>`).join('') + '</div>';
+  }
+
+  const statusLabel = {done:'Concluída ✔', available:'Disponível ⭐', locked:'Bloqueada 🔒', planned:'Planejada (simulação) ⏳'}[status];
+  const periodLabel = course.elective ? 'Optativa' : `${PERIOD_LABEL[course.period]} período`;
+
+  tooltipEl.innerHTML = `
+    <h4>${course.name}</h4>
+    <div class="tt-meta">${course.code} · ${course.hours}h · <span style="color:${color};">${course.dept}</span> · ${periodLabel} · <strong>${statusLabel}</strong></div>
+    <div class="tt-section"><span class="tt-label">Pré-requisitos</span><div class="tt-list">${prereqHtml}</div></div>
+    <div class="tt-section"><span class="tt-label">Desbloqueia</span>${unlocksHtml}</div>
+  `;
+  tooltipEl.classList.add('show');
+}
+
+function hideTooltip(){ tooltipEl.classList.remove('show'); }
+
+function positionTooltip(e){
+  const pad = 16;
+  let x = e.clientX + pad;
+  let y = e.clientY + pad;
+  const tw = 310, th = 280;
+  if(x + tw > window.innerWidth) x = e.clientX - tw - pad;
+  if(y + th > window.innerHeight) y = e.clientY - th - pad;
+  tooltipEl.style.left = x+'px';
+  tooltipEl.style.top = y+'px';
+}
+
+/* ---------- Controles ---------- */
+document.getElementById('simulateToggle').addEventListener('click', function(){
+  simulateMode = !simulateMode;
+  this.classList.toggle('active', simulateMode);
+  this.textContent = simulateMode ? 'Modo Simulação (ativo)' : 'Modo Simulação';
+});
+
+document.getElementById('electivesToggle').addEventListener('click', function(){
+  electivesVisible = !electivesVisible;
+  document.getElementById('electivesSection').hidden = !electivesVisible;
+  this.classList.toggle('active', electivesVisible);
+  this.textContent = electivesVisible ? 'Ocultar Optativas' : 'Mostrar Optativas (153)';
+  redrawAll();
+});
+
+document.getElementById('clearPlanned').addEventListener('click', ()=>{
+  planned.clear();
+  redrawAll();
+});
+
+document.getElementById('resetProgress').addEventListener('click', ()=>{
+  if(confirm('Tem certeza que deseja apagar todo o seu progresso salvo?')){
+    completed.clear();
+    planned.clear();
+    saveCompleted();
+    redrawAll();
+  }
+});
+
+document.getElementById('search').addEventListener('input', (e)=>{
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll('.node').forEach(el=>{
+    const course = byCode[el.dataset.code];
+    if(!q){ el.classList.remove('dim','search-hit'); return; }
+    const match = course.code.toLowerCase().includes(q) || course.name.toLowerCase().includes(q);
+    el.classList.toggle('search-hit', match);
+    el.classList.toggle('dim', !match);
+    if(match && course.elective && !electivesVisible){
+      document.getElementById('electivesToggle').click();
+    }
+  });
+});
+
+window.addEventListener('resize', ()=>{ requestAnimationFrame(drawEdges); });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+buildColumns();
+buildClusters();
+redrawAll();
+setTimeout(drawEdges, 150);
+if(document.fonts && document.fonts.ready){ document.fonts.ready.then(drawEdges); }
+</script>
+</body>
+</html>
