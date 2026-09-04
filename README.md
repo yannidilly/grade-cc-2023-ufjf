@@ -13,7 +13,8 @@ A matriz curricular oficial mostra os pré-requisitos de cada disciplina em form
 - Quais matérias uma disciplina específica libera ao ser concluída;
 - Qual é o "caminho crítico" do curso (ex: Algoritmos → Algoritmos II → Estrutura de Dados → ...);
 - Quais disciplinas já estão liberadas para cursar _agora_, dado o que já foi concluído;
-- Como ficaria o desbloqueio de matérias futuras se determinadas disciplinas fossem cursadas antes do previsto.
+- Como ficaria o desbloqueio de matérias futuras se determinadas disciplinas fossem cursadas antes do previsto;
+- Quais **disciplinas eletivas** já estão disponíveis e o que elas exigem, já que a matriz oficial lista essas opções numa planilha separada da grade obrigatória.
 
 Este projeto resolve isso transformando a grade em um **grafo de dependências navegável**, no espírito de uma árvore de habilidades de jogos de RPG: nós conectados por setas, bloqueados por cadeados até que os pré-requisitos sejam cumpridos, e organizados nas colunas de período recomendadas pela grade oficial.
 
@@ -30,8 +31,10 @@ Este projeto resolve isso transformando a grade em um **grafo de dependências n
 - **Marcar matérias como concluídas** com um clique — o progresso é salvo automaticamente no `localStorage` do navegador (nada é enviado para servidor nenhum).
 - **Modo Simulação**: permite planejar disciplinas futuras sem alterar seu progresso real, mostrando em cascata o que seria desbloqueado.
 - **Tooltip ao passar o mouse**, com nome completo, carga horária, pré-requisitos (com indicação do que já foi cumprido) e quais disciplinas aquela matéria libera.
-- **Barra de progresso** com total de horas obrigatórias concluídas.
-- **Busca** por nome ou código da disciplina.
+- **Duas barras de progresso**: horas obrigatórias concluídas (meta de 2670h) e horas eletivas concluídas (meta de 240h), cada uma contada separadamente.
+- **Busca** por nome ou código da disciplina — inclusive entre as eletivas, que são reveladas automaticamente quando um resultado da busca está entre elas.
+- **94 disciplinas eletivas reais**, extraídas da planilha oficial de eletivas, organizadas por área de conhecimento (Computação Gráfica, Desenvolvimento de Software, Gestão de TI, Informática na Educação, Programação Matemática, Sistemas de Computação e Complementar) numa seção própria e recolhível ("Mostrar Eletivas"), com setas de dependência que também cruzam para a grade obrigatória quando aplicável.
+- Disciplinas eletivas com pré-requisito **"Variável"** (definido a cada oferta do curso, ex: Seminários e Tópicos Especiais) ficam sempre disponíveis e **não recebem setas de dependência**, já que não há um pré-requisito fixo a representar.
 - Tratamento de casos especiais, como o **TCC I**, que exige 1560 horas cursadas além do pré-requisito de Metodologia Científica.
 
 ## 🕹️ Como usar
@@ -43,12 +46,13 @@ Este projeto resolve isso transformando a grade em um **grafo de dependências n
 5. Ative o **Modo Simulação** no topo da página para planejar o futuro: as disciplinas marcadas nesse modo não são salvas, servem apenas para visualizar cenários (ex: "se eu pegar Banco de Dados e Engenharia de Software, o que mais se abre?").
 6. Use **Limpar simulação** para descartar o planejamento, ou **Resetar progresso** para apagar tudo o que foi marcado como concluído.
 7. Use a busca no topo para localizar rapidamente uma disciplina pelo nome ou código (ex: `DCC013`).
+8. Clique em **Mostrar Eletivas** para revelar as 94 disciplinas eletivas, agrupadas por área de conhecimento — elas funcionam exatamente como as obrigatórias (clique para concluir, hover para ver pré-requisitos e o que desbloqueiam), exceto as marcadas com **"Pré-req. Variável"**, que ficam sempre disponíveis por não terem um pré-requisito fixo definido no catálogo.
 
 > Seu progresso fica salvo **apenas no seu navegador** (via `localStorage`). Limpar os dados do site no navegador, ou acessar de outro dispositivo/navegador, reinicia o progresso.
 
 ## 🗂️ Fonte dos dados
 
-As disciplinas, cargas horárias, áreas de formação e pré-requisitos foram extraídos do documento oficial **"Matriz Curricular 2023 - Ciência da Computação Integral"** da UFJF (arquivo PDF incluído neste repositório).
+As disciplinas obrigatórias, cargas horárias, áreas de formação e pré-requisitos foram extraídos do documento oficial **"Matriz Curricular 2023 - Ciência da Computação Integral"** da UFJF. As 94 disciplinas eletivas vêm da planilha complementar **"Matriz Curricular 2023 - Ciência da Computação Integral - Disciplinas eletivas"**, também da UFJF (ambos os PDFs estão incluídos neste repositório). Duas referências de pré-requisito que apontam para códigos de disciplinas fora deste catálogo (equivalências legadas) foram desconsideradas do bloqueio automático e ficam anotadas no tooltip da respectiva eletiva.
 
 ## 🛠️ Tecnologias
 

@@ -14,21 +14,19 @@ Assim como no projeto principal, a ideia é transformar uma matriz curricular de
 
 ## ✨ O que este subprojeto tem de diferente
 
-O currículo da UFV é mais complexo que o da UFJF usado no projeto principal, então o site precisou de alguns recursos extras:
+Tanto a grade de CC (projeto principal) quanto esta de Ciências Biológicas têm uma seção de disciplinas eletivas/optativas recolhível, agrupada por categoria, com setas de dependência cruzando para a grade obrigatória e uma barra de progresso própria — essa mecânica hoje é comum aos dois sites. O que continua sendo específico deste subprojeto é a complexidade bem maior do currículo da UFV:
 
-- **47 disciplinas obrigatórias** (10 períodos, 2685h) **+ 153 disciplinas optativas** (meta de 500h), todas extraídas do catálogo oficial.
-- **Cores por departamento** (BAN, BIO, BQI, BVE, EDU, MBI, QUI, SOL...) em vez das áreas de formação (Básica/Tecnológica/Humanística) usadas na grade de CC.
-- Um **parser de pré-requisitos com "e" / "ou" / parênteses**, já que aqui é comum ter regras como `(BQI 100 ou BQI 103 ou BQI 211) e (BIO 220* ou BIO 221*)` — bem mais elaboradas do que as da UFJF.
-- Suporte a **correquisitos** (marcados com `*` no catálogo, quando a disciplina pode ser cursada junto do pré-requisito, sem bloquear uma a outra).
+- **47 disciplinas obrigatórias** (10 períodos, 2685h) **+ 153 disciplinas optativas** (meta de 500h) — quase o dobro das 94 eletivas da grade de CC.
+- **Cores por departamento** (BAN, BIO, BQI, BVE, EDU, MBI, QUI, SOL...), um esquema mais granular que as poucas áreas de formação/conhecimento usadas na grade de CC.
+- Um **parser de pré-requisitos com "e" / "ou" / parênteses**, já que aqui é comum ter regras como `(BQI 100 ou BQI 103 ou BQI 211) e (BIO 220* ou BIO 221*)` — a grade de CC não precisa disso porque seus pré-requisitos são sempre listas simples ("e" implícito).
+- Suporte a **correquisitos** (marcados com `*` no catálogo, quando a disciplina pode ser cursada junto do pré-requisito, sem bloquear uma a outra) — recurso que a grade de CC não usa.
 - Pré-requisitos que referenciam **códigos fora deste catálogo** (disciplinas legadas ou de outros cursos, ex: `BQI 100`, `MBI 102`) são tratados como não verificáveis e não contam como cumpridos, para não abrir brechas na árvore.
-- A seção de **153 optativas** fica recolhida por padrão (botão "Mostrar Optativas"), agrupada por departamento, mas continua totalmente conectada por setas à árvore principal — muitas optativas dependem de disciplinas obrigatórias.
-- Duas barras de progresso separadas: horas obrigatórias e horas optativas.
 
-O restante da mecânica é idêntico ao projeto principal: clique para marcar como concluída, progresso salvo no `localStorage` do navegador, Modo Simulação, busca, tooltips com pré-requisitos e o que cada disciplina libera.
+O restante da mecânica é idêntico ao projeto principal: clique para marcar como concluída, progresso salvo no `localStorage` do navegador, Modo Simulação, busca (que também revela automaticamente a eletiva/optativa correspondente), tooltips com pré-requisitos e o que cada disciplina libera.
 
 ## 🕹️ Como usar
 
-Veja as instruções de uso no [README do projeto principal](../README.md#🕹️-como-usar) — a interação é a mesma. A única diferença de navegação é o botão **Mostrar Optativas**, que revela as 153 disciplinas optativas agrupadas por departamento.
+Veja as instruções de uso no [README do projeto principal](../README.md#🕹️-como-usar) — a interação é a mesma, incluindo o botão equivalente ao "Mostrar Eletivas" de lá: aqui ele se chama **Mostrar Optativas** e revela as 153 disciplinas optativas agrupadas por departamento.
 
 ## 🗂️ Fonte dos dados
 
