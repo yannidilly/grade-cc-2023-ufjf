@@ -88,6 +88,7 @@ header{
 .stat-value{font-size:1.05rem; font-weight:700; color:var(--ink);}
 .progress-bar{width:170px; height:8px; border-radius:5px; background:#1f2238; border:1px solid var(--border); overflow:hidden; margin-top:4px;}
 .progress-fill{height:100%; background:linear-gradient(90deg,var(--green),#7ef0ac); box-shadow:0 0 10px var(--green-glow); transition:width .4s ease;}
+.progress-fill.elective{background:linear-gradient(90deg,var(--blue),#9ecfff); box-shadow:0 0 10px var(--blue-glow);}
 
 .controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
 input#search{
@@ -110,6 +111,10 @@ button#simulateToggle.active{
 }
 button#simulateToggle::before{content:"○ "; }
 button#simulateToggle.active::before{content:"● ";}
+button#electivesToggle.active{
+  background:linear-gradient(160deg, rgba(61,220,132,.22), rgba(61,220,132,.08));
+  border-color:var(--green); color:#c9ffe0;
+}
 button.danger:hover{border-color:var(--red); color:#ffb3ba;}
 
 /* ---------- LEGEND ---------- */
@@ -218,6 +223,37 @@ button.danger:hover{border-color:var(--red); color:#ffb3ba;}
 .elective-tag{
   position:absolute; top:6px; right:8px; font-size:.6rem; color:var(--fc); font-weight:700;
 }
+.node .variable-badge{
+  font-size:.58rem; font-weight:700; padding:1px 6px; border-radius:20px; letter-spacing:.3px;
+  color:var(--ink-faint); border:1px dashed var(--ink-faint); margin-top:5px; display:inline-block;
+}
+
+/* ---------- Eletivas ---------- */
+#pageWrap{position:relative;}
+#electivesSection[hidden]{display:none;}
+.section-divider{
+  display:flex; align-items:center; gap:14px; max-width:1200px; margin:22px auto 4px; padding:0 24px;
+}
+.section-divider .line{flex:1; height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent);}
+.section-divider .label{font-family:'Cinzel',serif; color:var(--gold); font-size:1rem; letter-spacing:1px; white-space:nowrap;}
+#electivesIntro{
+  max-width:900px; margin:8px auto 18px; padding:14px 22px; text-align:center;
+  color:var(--ink-dim); font-size:.85rem; line-height:1.5; position:relative; z-index:1;
+}
+#electivesIntro strong{color:var(--gold);}
+#clusters{position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:22px; padding:0 24px 40px;}
+.cluster{
+  background:rgba(255,255,255,.02); border:1px solid var(--border); border-radius:14px;
+  padding:14px 16px 4px;
+}
+.cluster-head{display:flex; align-items:baseline; gap:8px; margin-bottom:10px;}
+.cluster-head .dept-chip{
+  font-family:'Cinzel',serif; font-weight:700; font-size:.85rem; padding:3px 10px; border-radius:20px;
+  border:1.5px solid; letter-spacing:.5px;
+}
+.cluster-head .dept-count{font-size:.7rem; color:var(--ink-faint); font-weight:600;}
+.cluster-nodes{display:flex; flex-wrap:wrap; gap:14px;}
+.cluster-nodes .node{margin-bottom:14px;}
 
 /* ---------- TOOLTIP ---------- */
 #tooltip{
@@ -270,11 +306,17 @@ footer{
       <div class="stat-value" id="statHours">0h / 2670h</div>
       <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     </div>
+    <div class="stat">
+      <div class="stat-label">Horas eletivas</div>
+      <div class="stat-value" id="statElectiveHours">0h / 240h</div>
+      <div class="progress-bar"><div class="progress-fill elective" id="progressFillElec" style="width:0%"></div></div>
+    </div>
   </div>
 
   <div class="controls">
     <input id="search" type="text" placeholder="Buscar matéria ou código...">
     <button id="simulateToggle" title="Planeje o futuro sem salvar como concluído">Modo Simulação</button>
+    <button id="electivesToggle">Mostrar Eletivas</button>
     <button id="clearPlanned">Limpar simulação</button>
     <button id="resetProgress" class="danger">Resetar progresso</button>
   </div>
@@ -296,15 +338,39 @@ footer{
     <span class="legend-item"><span class="legend-dot" style="background:var(--fc);"></span>Complementar</span>
   </div>
   <div class="legend-group">
+    <span class="legend-title">Área (eletivas)</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#ef6fa8;"></span>Comp. Gráfica</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#5c7cfa;"></span>Desenv. Software</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#ff8a3d;"></span>Gestão de TI</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#b07cf0;"></span>Informát. Educação</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#2fd7c4;"></span>Prog. Matemática</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#d1495b;"></span>Sist. Computação</span>
+  </div>
+  <div class="legend-group">
     <span class="legend-title">Dica</span>
-    <span class="legend-item">Clique numa matéria disponível para marcar como concluída · passe o mouse para ver pré-requisitos e o que ela libera</span>
+    <span class="legend-item">Clique numa matéria disponível para marcar como concluída · passe o mouse para ver pré-requisitos e o que ela libera · disciplinas com pré-requisito "Variável" ficam sempre disponíveis e sem setas</span>
   </div>
 </div>
 
-<div id="board">
-  <div id="content">
-    <svg id="edges"></svg>
-    <div id="columns"></div>
+<div id="pageWrap">
+  <svg id="edges"></svg>
+
+  <div id="board">
+    <div id="content">
+      <div id="columns"></div>
+    </div>
+  </div>
+
+  <div id="electivesSection" hidden>
+    <div class="section-divider">
+      <span class="line"></span><span class="label">Disciplinas Eletivas</span><span class="line"></span>
+    </div>
+    <div id="electivesIntro">
+      O currículo exige <strong>240 horas</strong> em disciplinas eletivas, escolhidas livremente entre as opções abaixo
+      (organizadas por área de conhecimento). Disciplinas com pré-requisito <strong>Variável</strong> (definido a cada
+      oferta do curso) ficam sempre disponíveis e não têm setas de dependência.
+    </div>
+    <div id="clusters"></div>
   </div>
 </div>
 
@@ -321,6 +387,13 @@ const AREA_INFO = {
   FT: { label:'Tecnológica',   color:'var(--ft)' },
   FH: { label:'Humanística',   color:'var(--fh)' },
   FC: { label:'Complementar',  color:'var(--fc)' },
+  // áreas de conhecimento das disciplinas eletivas
+  CG: { label:'Computação Gráfica',        color:'#ef6fa8' },
+  DS: { label:'Desenvolvimento de Software', color:'#5c7cfa' },
+  TI: { label:'Gestão de TI',              color:'#ff8a3d' },
+  IE: { label:'Informática na Educação',   color:'#b07cf0' },
+  PM: { label:'Programação Matemática',    color:'#2fd7c4' },
+  SC: { label:'Sistemas de Computação',    color:'#d1495b' },
 };
 
 const COURSES = [
@@ -387,11 +460,133 @@ const COURSES = [
   { code:'DCC045', name:'Teoria dos Compiladores', hours:60, area:'FT', period:8, prereqs:['DCC063'] },
   { code:'DCC064', name:'Sistemas Distribuídos', hours:60, area:'FT', period:8, prereqs:['DCC062'] },
   { code:'DCC205', name:'Trabalho de Conclusão de Curso II', hours:60, area:'FH', period:8, prereqs:['DCC204'] },
-  { code:'ELE1', name:'Disciplina Eletiva', hours:60, area:'FC', period:8, prereqs:[], elective:true },
-  { code:'ELE2', name:'Disciplina Eletiva', hours:60, area:'FC', period:8, prereqs:[], elective:true },
 ];
 
 const PERIOD_HOURS = {1:360,2:390,3:390,4:360,5:330,6:330,7:330,8:300};
+
+/* =========================================================
+   DISCIPLINAS ELETIVAS
+   Fonte: Matriz Curricular 2023 - Ciência da Computação Integral (UFJF) — planilha de Eletivas
+   [codigo, nome, horas, área, pré-requisitos, opções{variable, note}]
+   Códigos de pré-requisito fora deste catálogo (equivalências legadas, ex: DCC107, CAD076)
+   são omitidos da lista de pré-requisitos e mencionados em "note".
+   ========================================================= */
+const RAW_ELECTIVES = [
+  // Computação Gráfica
+  ['DCC066','Processamento de Imagens',60,'CG',['DCC199','MAT158']],
+  ['DCC129','Realidade Virtual e Aumentada',60,'CG',['DCC199','MAT158']],
+  ['DCC148','Desenvolvimento de Jogos',60,'CG',['DCC025','MAT155']],
+  ['DCC191','Visualização Científica',60,'CG',['DCC199','MAT156']],
+  ['DCC197','Visão Computacional',60,'CG',['DCC013']],
+  // Desenvolvimento de Software
+  ['DCC077','Aspectos Avançados em Banco de Dados',60,'DS',['DCC060']],
+  ['DCC078','Aspectos Avançados em Engenharia de Software',60,'DS',['DCC061']],
+  ['DCC080','Laboratório Integrado de Desenvolvimento de Software',30,'DS',['DCC060','DCC061']],
+  ['DCC083','Qualidade de Software',30,'DS',['DCC061']],
+  ['DCC093','Tópicos em Desenvolvimento de Software I',60,'DS',[],{variable:true}],
+  ['DCC094','Tópicos em Desenvolvimento de Software II',60,'DS',[],{variable:true}],
+  ['DCC127','Mineração de Dados',60,'DS',['DCC013'],{note:'Também referencia DCC107, fora deste catálogo.'}],
+  ['DCC132','Engenharia de Software Experimental',60,'DS',['DCC061']],
+  ['DCC138','Tópicos de Linguagem Programação I',60,'DS',[],{variable:true}],
+  ['DCC139','Tópicos de Linguagem Programação II',60,'DS',[],{variable:true}],
+  ['DCC143','Administração de Dados',60,'DS',['DCC060']],
+  ['DCC147','Data Warehouse',60,'DS',['DCC060']],
+  ['DCC149','Engenharia de Requisitos',60,'DS',['DCC117']],
+  ['DCC153','Gerência de Configuração de Software',60,'DS',['DCC061']],
+  ['DCC164','Recuperação da Informação',60,'DS',['DCC060']],
+  ['DCC168','Teste de Software',60,'DS',['DCC061']],
+  ['DCC176','Sistemas Colaborativos',60,'DS',['DCC117']],
+  ['DCC206','Desenvolvimento Web II',30,'DS',['DCC202']],
+  ['DCC207','Desenvolvimento Web Front-End',60,'DS',['DCC206']],
+  ['DCC208','Desenvolvimento Web Back-End',60,'DS',['DCC117','DCC206']],
+  ['DCC209','Desenvolvimento para Dispositivos Móveis',60,'DS',['DCC207']],
+  // Gestão de TI
+  ['DCC088','Gestão da Tecnologia e Inovação Tecnológica',60,'TI',['DCC210']],
+  ['DCC133','Introdução à Sistemas de Informação',60,'TI',[]],
+  ['DCC145','Aspectos Organizacionais de Sistemas de Informação',60,'TI',['DCC133']],
+  ['DCC154','Gerência de Projetos',60,'TI',['DCC061']],
+  ['DCC155','Gestão do Conhecimento',60,'TI',['DCC117'],{note:'Também referencia CAD076, fora deste catálogo.'}],
+  ['DCC161','Modelagem de Negócio',60,'TI',['DCC117']],
+  ['DCC165','Segurança e Auditoria de Sistemas',60,'TI',['DCC133']],
+  ['DCC210','Empreendedorismo Tecnológico',60,'TI',['CAD014','DCC117']],
+  // Informática na Educação
+  ['DCC086','Informática na Educação',60,'IE',[]],
+  ['DCC095','Tópicos em Ciência, Tecnologia e Sociedade I',60,'IE',[],{variable:true}],
+  ['DCC096','Tópicos em Ciência, Tecnologia e Sociedade II',60,'IE',[],{variable:true}],
+  ['DCC124','Ambientes Virtuais de Aprendizagem',60,'IE',[]],
+  ['EADDCC037','Projeto de Software Educacional',60,'IE',['DCC061']],
+  ['EADDCC043','Avaliação de Software Educacional',30,'IE',[]],
+  ['EADDCC048','Objetos de Aprendizagem',60,'IE',['EADDCC037']],
+  // Programação Matemática
+  ['DCC067','Computação Evolucionista',60,'PM',['DCC059']],
+  ['DCC068','Redes Neurais Artificiais',60,'PM',['DCC059']],
+  ['DCC069','Programação Não Linear',60,'PM',['DCC163']],
+  ['DCC073','Teoria de Filas',60,'PM',['EST028']],
+  ['DCC076','Programação em Lógica',60,'PM',['DCC160']],
+  ['DCC089','Tópicos em Computação Científica I',60,'PM',[],{variable:true}],
+  ['DCC090','Tópicos em Computação Científica II',60,'PM',[],{variable:true}],
+  ['DCC136','Inteligência Computacional',60,'PM',['DCC059']],
+  ['DCC137','Sistemas Nebulosos',60,'PM',['DCC199']],
+  ['DCC140','Tópicos em Inteligência Computacional I',60,'PM',[],{variable:true}],
+  ['DCC141','Tópicos em Inteligência Computacional II',60,'PM',[],{variable:true}],
+  ['DCC142','Análise e Projeto de Algoritmos II',30,'PM',['DCC001']],
+  ['DCC166','Sistemas de Apoio à Decisão',60,'PM',['DCC014']],
+  ['DCC167','Sistemas Inteligentes',60,'PM',['DCC014']],
+  ['DCC172','Programação Competitiva',60,'PM',['DCC013']],
+  ['DCC173','Análise Numérica',60,'PM',['DCC008']],
+  ['DCC177','Pesquisa Operacional II',60,'PM',['DCC163']],
+  ['DCC178','Pesquisa Operacional III',60,'PM',['DCC173']],
+  ['DCC190','Solução Numérica de Equações Diferenciais',60,'PM',['DCC008']],
+  // Sistemas de Computação
+  ['DCC033','Fluxo em Redes',60,'SC',['DCC059']],
+  ['DCC037','Laboratório de Organização de Computadores',30,'SC',['DCC070']],
+  ['DCC057','Arquitetura de Computadores',60,'SC',['DCC070']],
+  ['DCC071','Laboratório de Sistemas Operacionais',30,'SC',['DCC062']],
+  ['DCC072','Laboratório de Redes de Computadores',30,'SC',['DCC042']],
+  ['DCC074','Avaliação de Desempenho de Sistemas',60,'SC',['EST029']],
+  ['DCC082','Sistemas Multimídia',60,'SC',['DCC042','DCC062']],
+  ['DCC091','Tópicos em Redes e Processamento Distribuído I',60,'SC',[],{variable:true}],
+  ['DCC092','Tópicos em Redes e Processamento Distribuído II',60,'SC',[],{variable:true}],
+  ['DCC125','Programação Paralela',60,'SC',['DCC062']],
+  ['DCC126','TV Digital',60,'SC',['DCC042']],
+  ['DCC128','Gerência de Redes',30,'SC',['DCC042']],
+  ['DCC130','Computação Móvel, Ubíqua e Pervasiva',30,'SC',['DCC042']],
+  ['DCC131','Projeto de Redes de Computadores',30,'SC',['DCC042']],
+  ['DCC144','Administração de Redes',60,'SC',['DCC042']],
+  // Complementar
+  ['DCC097','Seminário em Computação I',30,'FC',[],{variable:true}],
+  ['DCC098','Seminário em Computação II',30,'FC',[],{variable:true}],
+  ['DCC099','Seminário em Computação III',30,'FC',[],{variable:true}],
+  ['DCC100','Seminário em Computação IV',30,'FC',[],{variable:true}],
+  ['DCC101','Seminário em Computação V',30,'FC',[],{variable:true}],
+  ['DCC102','Seminário em Computação VI',30,'FC',[],{variable:true}],
+  ['DCC103','Seminário em Computação VII',30,'FC',[],{variable:true}],
+  ['DCC104','Seminário em Computação VIII',30,'FC',[],{variable:true}],
+  ['DCC105','Seminário em Computação IX',30,'FC',[],{variable:true}],
+  ['EADDCC049','Aspectos Legais da Informática',60,'FC',[]],
+  ['CAD014','Administração e Organização de Empresas',60,'FC',[]],
+  ['ECO034','Economia',60,'FC',[]],
+  ['EST030','Análise Exploratória de Dados',60,'FC',['EST029']],
+  ['FIN001','Contabilidade Geral e Introdutória',60,'FC',[]],
+  ['FIS074','Física II',60,'FC',['FIS073','MAT156']],
+  ['FIS075','Física III',60,'FC',['FIS074','MAT157']],
+  ['MAC011','Introdução à Engenharia Computacional',30,'FC',[]],
+  ['MAC036','Representação Gráfica e Modelagem Geométrica',30,'FC',[]],
+  ['MAT013','Matemática Financeira',60,'FC',[]],
+];
+
+RAW_ELECTIVES.forEach(([code,name,hours,area,prereqs,opts])=>{
+  opts = opts || {};
+  COURSES.push({
+    code, name, hours, area, period:null,
+    prereqs: opts.variable ? [] : prereqs,
+    elective:true,
+    variable: !!opts.variable,
+    note: opts.note,
+  });
+});
+
+const ELECTIVE_TARGET_HOURS = 240;
 const TOTAL_MANDATORY_HOURS = COURSES.filter(c=>!c.elective).reduce((s,c)=>s+c.hours,0);
 
 const byCode = {};
@@ -416,6 +611,18 @@ function saveCompleted(){
 
 function completedHours(){
   return [...completed].reduce((s,code)=> s + (byCode[code]? byCode[code].hours : 0), 0);
+}
+function mandatoryCompletedHours(){
+  return [...completed].reduce((s,code)=>{
+    const c = byCode[code];
+    return s + (c && !c.elective ? c.hours : 0);
+  },0);
+}
+function electiveCompletedHours(){
+  return [...completed].reduce((s,code)=>{
+    const c = byCode[code];
+    return s + (c && c.elective ? c.hours : 0);
+  },0);
 }
 
 function effectiveSet(){
@@ -449,6 +656,9 @@ function statusOf(code){
 const columnsEl = document.getElementById('columns');
 const svgEl = document.getElementById('edges');
 const contentEl = document.getElementById('content');
+const pageWrapEl = document.getElementById('pageWrap');
+const boardEl = document.getElementById('board');
+const clustersEl = document.getElementById('clusters');
 const tooltipEl = document.getElementById('tooltip');
 
 function buildColumns(){
@@ -486,6 +696,7 @@ function buildNode(course){
       <span class="hours">${course.hours}h</span>
       <span class="area-badge" style="color:${info.color}; border:1px solid ${info.color};">${course.area}</span>
     </div>
+    ${course.variable? '<span class="variable-badge">Pré-req. Variável</span>' : ''}
     ${course.elective? '<div class="elective-tag">★</div>' : ''}
   `;
   el.addEventListener('click', ()=>onNodeClick(course.code));
@@ -493,6 +704,29 @@ function buildNode(course){
   el.addEventListener('mouseleave', ()=>onNodeLeave());
   el.addEventListener('mousemove', (e)=>positionTooltip(e));
   return el;
+}
+
+function buildClusters(){
+  clustersEl.innerHTML = '';
+  const byArea = {};
+  COURSES.filter(c=>c.elective).forEach(c=>{
+    (byArea[c.area] = byArea[c.area] || []).push(c);
+  });
+  Object.keys(byArea).forEach(area=>{
+    const list = byArea[area];
+    const info = AREA_INFO[area];
+    const card = document.createElement('div');
+    card.className = 'cluster';
+    card.innerHTML = `<div class="cluster-head">
+        <span class="dept-chip" style="color:${info.color}; border-color:${info.color};">${info.label}</span>
+        <span class="dept-count">${list.length} disciplina${list.length>1?'s':''}</span>
+      </div>`;
+    const nodesWrap = document.createElement('div');
+    nodesWrap.className = 'cluster-nodes';
+    list.forEach(c=>nodesWrap.appendChild(buildNode(c)));
+    card.appendChild(nodesWrap);
+    clustersEl.appendChild(card);
+  });
 }
 
 const STATUS_ICON = { done:'✔', available:'⭐', locked:'🔒', planned:'⏳' };
@@ -511,9 +745,12 @@ function refreshNodes(){
   const totalMandatory = COURSES.filter(c=>!c.elective).length;
   const doneMandatory = COURSES.filter(c=>!c.elective && completed.has(c.code)).length;
   document.getElementById('statCourses').textContent = `${doneMandatory} / ${totalMandatory}`;
-  const h = completedHours();
+  const h = mandatoryCompletedHours();
   document.getElementById('statHours').textContent = `${h}h / ${TOTAL_MANDATORY_HOURS}h`;
   document.getElementById('progressFill').style.width = Math.min(100, (h/TOTAL_MANDATORY_HOURS*100)).toFixed(1)+'%';
+  const eh = electiveCompletedHours();
+  document.getElementById('statElectiveHours').textContent = `${eh}h / ${ELECTIVE_TARGET_HOURS}h`;
+  document.getElementById('progressFillElec').style.width = Math.min(100, eh/ELECTIVE_TARGET_HOURS*100).toFixed(1)+'%';
 }
 
 /* ---------- Edges (SVG) ---------- */
@@ -528,11 +765,14 @@ function edgeColor(fromCode, toCode){
   return {stroke:'#454864', width:1.4, dash:'4,4', op:.45, marker:'arrow-gray'};
 }
 
+function isVisible(el){
+  return !!el && el.offsetParent !== null;
+}
+
 function drawEdges(){
-  const cRect = contentEl.getBoundingClientRect();
-  contentEl.style.width = columnsEl.scrollWidth + 'px';
-  const w = columnsEl.scrollWidth;
-  const h = columnsEl.scrollHeight;
+  const cRect = pageWrapEl.getBoundingClientRect();
+  const w = pageWrapEl.scrollWidth;
+  const h = pageWrapEl.scrollHeight;
   svgEl.setAttribute('width', w);
   svgEl.setAttribute('height', h);
   svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
@@ -548,10 +788,11 @@ function drawEdges(){
 
   let paths = '';
   COURSES.forEach(course=>{
+    const toEl = document.querySelector(`.node[data-code="${course.code}"]`);
+    if(!isVisible(toEl)) return;
     course.prereqs.forEach(pCode=>{
       const fromEl = document.querySelector(`.node[data-code="${pCode}"]`);
-      const toEl = document.querySelector(`.node[data-code="${course.code}"]`);
-      if(!fromEl || !toEl) return;
+      if(!isVisible(fromEl)) return;
       const fr = fromEl.getBoundingClientRect();
       const tr = toEl.getBoundingClientRect();
       const x1 = fr.right - cRect.left;
@@ -644,7 +885,9 @@ function showTooltip(code){
   const { missing, hoursOk } = prereqsMet(course, set);
 
   let prereqHtml = '<span class="tt-list ok">Nenhum</span>';
-  if(course.prereqs.length){
+  if(course.variable){
+    prereqHtml = '<span class="tt-list">🔀 Variável — definido a cada oferta da disciplina (sempre disponível, sem dependências)</span>';
+  } else if(course.prereqs.length){
     prereqHtml = '<div class="tt-list">' + course.prereqs.map(p=>{
       const met = set.has(p);
       return `<div class="${met?'ok':'warn'}">${met?'✔':'✖'} ${byCode[p]? byCode[p].name : p}</div>`;
@@ -665,10 +908,11 @@ function showTooltip(code){
   }
 
   const statusLabel = {done:'Concluída ✔', available:'Disponível ⭐', locked:'Bloqueada 🔒', planned:'Planejada (simulação) ⏳'}[status];
+  const periodLabel = course.elective ? 'Eletiva' : `${course.period}º período`;
 
   tooltipEl.innerHTML = `
     <h4>${course.name}</h4>
-    <div class="tt-meta">${course.code} · ${course.hours}h · ${info.label} · ${course.period}º período · <strong>${statusLabel}</strong></div>
+    <div class="tt-meta">${course.code} · ${course.hours}h · ${info.label} · ${periodLabel} · <strong>${statusLabel}</strong></div>
     <div class="tt-section"><span class="tt-label">Pré-requisitos</span>${prereqHtml}</div>
     <div class="tt-section"><span class="tt-label">Desbloqueia</span>${unlocksHtml}</div>
     ${extra}
@@ -696,6 +940,15 @@ document.getElementById('simulateToggle').addEventListener('click', function(){
   this.textContent = simulateMode ? 'Modo Simulação (ativo)' : 'Modo Simulação';
 });
 
+let electivesVisible = false;
+document.getElementById('electivesToggle').addEventListener('click', function(){
+  electivesVisible = !electivesVisible;
+  document.getElementById('electivesSection').hidden = !electivesVisible;
+  this.classList.toggle('active', electivesVisible);
+  this.textContent = electivesVisible ? 'Ocultar Eletivas' : `Mostrar Eletivas (${RAW_ELECTIVES.length})`;
+  redrawAll();
+});
+
 document.getElementById('clearPlanned').addEventListener('click', ()=>{
   planned.clear();
   redrawAll();
@@ -721,15 +974,21 @@ document.getElementById('search').addEventListener('input', (e)=>{
     const match = course.code.toLowerCase().includes(q) || course.name.toLowerCase().includes(q);
     el.classList.toggle('search-hit', match);
     el.classList.toggle('dim', !match);
+    if(match && course.elective && !electivesVisible){
+      document.getElementById('electivesToggle').click();
+    }
   });
 });
 
 window.addEventListener('resize', ()=>{ requestAnimationFrame(drawEdges); });
+boardEl.addEventListener('scroll', ()=>{ requestAnimationFrame(drawEdges); });
 
 /* =========================================================
    INIT
    ========================================================= */
 buildColumns();
+buildClusters();
+document.getElementById('electivesToggle').textContent = `Mostrar Eletivas (${RAW_ELECTIVES.length})`;
 redrawAll();
 // recalcula arestas após fontes/layout assentarem
 setTimeout(drawEdges, 150);
