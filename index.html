@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Árvore de Habilidades — Ciência da Computação (UFJF)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#0a0b14;
+  --bg-1:#11131f;
+  --bg-2:#171a2b;
+  --panel:#1a1d2e;
+  --panel-2:#20243a;
+  --ink:#e7e6f5;
+  --ink-dim:#9a9cb8;
+  --ink-faint:#6b6d8a;
+  --gold:#e8b83d;
+  --gold-glow:rgba(232,184,61,.55);
+  --green:#3ddc84;
+  --green-glow:rgba(61,220,132,.5);
+  --blue:#4aa8ff;
+  --blue-glow:rgba(74,168,255,.55);
+  --red:#ff5d6c;
+  --gray:#565a75;
+  --fb:#2fb8c6;
+  --ft:#e8a33d;
+  --fh:#b07cf0;
+  --fc:#8891a3;
+  --border:#2a2e45;
+  font-size:15px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background:
+    radial-gradient(ellipse 1200px 800px at 15% -10%, rgba(80,60,140,.25), transparent 60%),
+    radial-gradient(ellipse 1000px 700px at 100% 10%, rgba(40,120,140,.18), transparent 55%),
+    radial-gradient(ellipse 900px 900px at 50% 120%, rgba(150,100,40,.12), transparent 60%),
+    var(--bg-0);
+  color:var(--ink);
+  font-family:'Rajdhani',system-ui,sans-serif;
+  min-height:100vh;
+  background-attachment:fixed;
+}
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.5), transparent),
+    radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,.4), transparent),
+    radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,.35), transparent),
+    radial-gradient(1px 1px at 90% 20%, rgba(255,255,255,.4), transparent),
+    radial-gradient(1px 1px at 55% 15%, rgba(255,255,255,.3), transparent),
+    radial-gradient(1.5px 1.5px at 10% 65%, rgba(255,255,255,.3), transparent);
+  background-size: 100% 100%;
+  opacity:.5;
+  pointer-events:none;
+  z-index:0;
+}
+h1,h2,h3,.font-title{font-family:'Cinzel',serif;}
+
+/* ---------- HEADER ---------- */
+header{
+  position:relative; z-index:2;
+  padding:18px 24px 14px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(20,22,36,.92), rgba(20,22,36,.75));
+  backdrop-filter:blur(6px);
+  display:flex; flex-wrap:wrap; gap:16px 28px; align-items:center; justify-content:space-between;
+}
+.brand{display:flex; align-items:center; gap:12px; min-width:260px;}
+.brand-emblem{
+  width:44px;height:44px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #3a3f66, #12141f 70%);
+  border:2px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px; box-shadow:0 0 16px var(--gold-glow);
+  flex:0 0 auto;
+}
+.brand h1{margin:0; font-size:1.35rem; letter-spacing:.5px; color:var(--gold); text-shadow:0 0 18px rgba(232,184,61,.25);}
+.brand p{margin:2px 0 0; font-size:.8rem; color:var(--ink-dim); font-weight:500;}
+
+.stats{display:flex; gap:22px; flex-wrap:wrap; align-items:center;}
+.stat{min-width:150px;}
+.stat-label{font-size:.68rem; text-transform:uppercase; letter-spacing:1px; color:var(--ink-faint); font-weight:600;}
+.stat-value{font-size:1.05rem; font-weight:700; color:var(--ink);}
+.progress-bar{width:170px; height:8px; border-radius:5px; background:#1f2238; border:1px solid var(--border); overflow:hidden; margin-top:4px;}
+.progress-fill{height:100%; background:linear-gradient(90deg,var(--green),#7ef0ac); box-shadow:0 0 10px var(--green-glow); transition:width .4s ease;}
+
+.controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+input#search{
+  background:var(--panel); border:1px solid var(--border); color:var(--ink);
+  padding:9px 12px; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:.9rem;
+  width:200px; outline:none;
+}
+input#search::placeholder{color:var(--ink-faint);}
+input#search:focus{border-color:var(--gold);}
+button{
+  font-family:'Rajdhani',sans-serif; font-weight:600; font-size:.85rem;
+  padding:9px 14px; border-radius:8px; border:1px solid var(--border);
+  background:var(--panel); color:var(--ink); cursor:pointer; letter-spacing:.3px;
+  transition:all .15s ease; white-space:nowrap;
+}
+button:hover{border-color:var(--ink-dim); background:var(--panel-2);}
+button#simulateToggle.active{
+  background:linear-gradient(160deg, rgba(74,168,255,.28), rgba(74,168,255,.1));
+  border-color:var(--blue); color:#cfe7ff; box-shadow:0 0 14px rgba(74,168,255,.35);
+}
+button#simulateToggle::before{content:"○ "; }
+button#simulateToggle.active::before{content:"● ";}
+button.danger:hover{border-color:var(--red); color:#ffb3ba;}
+
+/* ---------- LEGEND ---------- */
+.legend-bar{
+  position:relative; z-index:2;
+  display:flex; flex-wrap:wrap; gap:18px 26px; align-items:center;
+  padding:10px 24px; font-size:.78rem; color:var(--ink-dim);
+  border-bottom:1px solid var(--border); background:rgba(15,16,26,.6);
+}
+.legend-group{display:flex; gap:12px; align-items:center; flex-wrap:wrap;}
+.legend-title{font-weight:700; color:var(--ink-faint); text-transform:uppercase; font-size:.66rem; letter-spacing:1px; margin-right:2px;}
+.legend-item{display:flex; align-items:center; gap:6px;}
+.legend-dot{width:11px;height:11px;border-radius:3px; display:inline-block; flex:0 0 auto;}
+.legend-node{
+  width:16px;height:16px;border-radius:4px;border:2px solid; display:inline-block; flex:0 0 auto;
+}
+
+/* ---------- BOARD ---------- */
+#board{
+  position:relative; z-index:1;
+  overflow-x:auto; overflow-y:hidden;
+  padding:26px 24px 40px;
+  min-height:60vh;
+}
+#content{position:relative;}
+#edges{position:absolute; top:0; left:0; pointer-events:none; z-index:0;}
+#columns{position:relative; z-index:1; display:flex; gap:34px; align-items:flex-start;}
+
+.column{width:198px; flex:0 0 auto;}
+.col-head{
+  position:sticky; top:0;
+  margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border);
+}
+.col-head .period-num{
+  font-family:'Cinzel',serif; font-weight:700; color:var(--gold); font-size:1rem; letter-spacing:1px;
+}
+.col-head .period-hours{font-size:.72rem; color:var(--ink-faint); font-weight:600; margin-top:2px;}
+
+.node{
+  position:relative;
+  margin-bottom:20px;
+  padding:10px 11px 9px;
+  border-radius:11px;
+  border:2px solid var(--border);
+  background:linear-gradient(155deg, #1c1f33, #14162350);
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .2s ease, border-color .2s ease, opacity .2s ease, filter .2s ease;
+  user-select:none;
+}
+.node:hover{transform:translateY(-2px);}
+.node .area-tab{
+  position:absolute; left:-2px; top:-2px; bottom:-2px; width:5px; border-radius:11px 0 0 11px;
+}
+.node .top-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
+.node .code{font-size:.68rem; font-weight:700; letter-spacing:.6px; color:var(--ink-faint); font-family:'Rajdhani',sans-serif;}
+.node .status-icon{font-size:.8rem; line-height:1;}
+.node .name{font-size:.82rem; font-weight:600; line-height:1.22; color:var(--ink); min-height:2.4em;}
+.node .bottom-row{display:flex; justify-content:space-between; align-items:center; margin-top:7px;}
+.node .hours{font-size:.66rem; color:var(--ink-faint); font-weight:600;}
+.node .area-badge{font-size:.6rem; font-weight:700; padding:1px 6px; border-radius:20px; letter-spacing:.5px;}
+
+.node.locked{filter:grayscale(.75) brightness(.6); opacity:.72;}
+.node.locked:hover{transform:none;}
+.node.locked .name{color:var(--ink-faint);}
+
+.node.available{
+  border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(232,184,61,.15), 0 0 16px var(--gold-glow);
+  animation:pulseGold 2.6s ease-in-out infinite;
+}
+@keyframes pulseGold{
+  0%,100%{box-shadow:0 0 0 1px rgba(232,184,61,.15), 0 0 12px rgba(232,184,61,.35);}
+  50%{box-shadow:0 0 0 1px rgba(232,184,61,.25), 0 0 22px rgba(232,184,61,.65);}
+}
+
+.node.done{
+  border-color:var(--green);
+  background:linear-gradient(155deg, #163827, #10231c);
+  box-shadow:0 0 16px var(--green-glow);
+}
+.node.done .name{color:#d9ffe8;}
+
+.node.planned{
+  border-color:var(--blue);
+  border-style:dashed;
+  background:linear-gradient(155deg, #16263d, #0f1a2c);
+  box-shadow:0 0 16px var(--blue-glow);
+}
+
+.node.dim{opacity:.22; filter:grayscale(1) brightness(.5);}
+.node.search-hit{outline:2px solid #fff; outline-offset:2px;}
+
+.node.hl-source{transform:translateY(-3px) scale(1.03); z-index:5;}
+.node.hl-prereq{box-shadow:0 0 0 2px var(--gold), 0 0 18px var(--gold-glow) !important;}
+.node.hl-unlock{box-shadow:0 0 0 2px var(--green), 0 0 18px var(--green-glow) !important;}
+
+.node.locked-shake{animation:shake .35s;}
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-4px);}
+  40%{transform:translateX(4px);}
+  60%{transform:translateX(-3px);}
+  80%{transform:translateX(3px);}
+}
+
+.elective-tag{
+  position:absolute; top:6px; right:8px; font-size:.6rem; color:var(--fc); font-weight:700;
+}
+
+/* ---------- TOOLTIP ---------- */
+#tooltip{
+  position:fixed; z-index:50; max-width:280px;
+  background:#15172480; background:linear-gradient(160deg,#1c1f33,#12141f);
+  border:1px solid var(--gold); border-radius:10px; padding:12px 14px;
+  box-shadow:0 8px 30px rgba(0,0,0,.55), 0 0 20px rgba(232,184,61,.15);
+  pointer-events:none; opacity:0; transition:opacity .12s ease;
+  font-size:.82rem; line-height:1.45;
+}
+#tooltip.show{opacity:1;}
+#tooltip h4{margin:0 0 4px; font-family:'Cinzel',serif; color:var(--gold); font-size:.85rem;}
+#tooltip .tt-meta{color:var(--ink-dim); font-size:.72rem; margin-bottom:6px;}
+#tooltip .tt-section{margin-top:6px;}
+#tooltip .tt-label{font-size:.65rem; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-faint); font-weight:700;}
+#tooltip .tt-list{margin:2px 0 0; font-size:.76rem; color:var(--ink);}
+#tooltip .warn{color:#ffb3ba;}
+#tooltip .ok{color:#8fffb8;}
+
+footer{
+  position:relative; z-index:1;
+  text-align:center; padding:18px; color:var(--ink-faint); font-size:.72rem;
+  border-top:1px solid var(--border);
+}
+
+::-webkit-scrollbar{height:10px; width:10px;}
+::-webkit-scrollbar-track{background:var(--bg-1);}
+::-webkit-scrollbar-thumb{background:#33364f; border-radius:6px;}
+::-webkit-scrollbar-thumb:hover{background:#454869;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-emblem">🎓</div>
+    <div>
+      <h1>Árvore de Habilidades</h1>
+      <p>Ciência da Computação Integral — UFJF · Matriz 2023</p>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Disciplinas concluídas</div>
+      <div class="stat-value" id="statCourses">0 / 0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Carga horária (obrigatórias)</div>
+      <div class="stat-value" id="statHours">0h / 2670h</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input id="search" type="text" placeholder="Buscar matéria ou código...">
+    <button id="simulateToggle" title="Planeje o futuro sem salvar como concluído">Modo Simulação</button>
+    <button id="clearPlanned">Limpar simulação</button>
+    <button id="resetProgress" class="danger">Resetar progresso</button>
+  </div>
+</header>
+
+<div class="legend-bar">
+  <div class="legend-group">
+    <span class="legend-title">Status</span>
+    <span class="legend-item"><span class="legend-node" style="border-color:var(--green); background:#163827;"></span>Concluída</span>
+    <span class="legend-item"><span class="legend-node" style="border-color:var(--gold); background:#1c1f33;"></span>Disponível</span>
+    <span class="legend-item"><span class="legend-node" style="border-color:var(--blue); border-style:dashed; background:#16263d;"></span>Planejada (simulação)</span>
+    <span class="legend-item"><span class="legend-node" style="border-color:#3a3d55; filter:grayscale(1) brightness(.6);"></span>🔒 Bloqueada</span>
+  </div>
+  <div class="legend-group">
+    <span class="legend-title">Área</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--fb);"></span>Básica</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--ft);"></span>Tecnológica</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--fh);"></span>Humanística</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--fc);"></span>Complementar</span>
+  </div>
+  <div class="legend-group">
+    <span class="legend-title">Dica</span>
+    <span class="legend-item">Clique numa matéria disponível para marcar como concluída · passe o mouse para ver pré-requisitos e o que ela libera</span>
+  </div>
+</div>
+
+<div id="board">
+  <div id="content">
+    <svg id="edges"></svg>
+    <div id="columns"></div>
+  </div>
+</div>
+
+<div id="tooltip"></div>
+
+<footer>Dados extraídos da Matriz Curricular 2023 (Ciência da Computação Integral, UFJF) · progresso salvo apenas no seu navegador (localStorage)</footer>
+
+<script>
+/* =========================================================
+   DADOS DA GRADE
+   ========================================================= */
+const AREA_INFO = {
+  FB: { label:'Básica',        color:'var(--fb)' },
+  FT: { label:'Tecnológica',   color:'var(--ft)' },
+  FH: { label:'Humanística',   color:'var(--fh)' },
+  FC: { label:'Complementar',  color:'var(--fc)' },
+};
+
+const COURSES = [
+  // Período 1
+  { code:'DCC199', name:'Algoritmos', hours:90, area:'FB', period:1, prereqs:[], note:'Inclui componente prática (DC5199, 0h).' },
+  { code:'FIS122', name:'Laboratório de Introdução às Ciências Físicas', hours:30, area:'FB', period:1, prereqs:[] },
+  { code:'ICE001', name:'Introdução a Ciências Exatas', hours:30, area:'FB', period:1, prereqs:[] },
+  { code:'MAT154', name:'Cálculo I', hours:60, area:'FB', period:1, prereqs:[] },
+  { code:'MAT155', name:'Geometria Analítica e Sistemas Lineares', hours:60, area:'FB', period:1, prereqs:[] },
+  { code:'QUI125', name:'Química Fundamental', hours:60, area:'FB', period:1, prereqs:[] },
+  { code:'QUI126', name:'Laboratório de Química', hours:30, area:'FB', period:1, prereqs:[] },
+
+  // Período 2
+  { code:'DCC200', name:'Algoritmos II', hours:90, area:'FB', period:2, prereqs:['DCC199'], note:'Inclui componente prática (DC5200, 0h).' },
+  { code:'EST028', name:'Introdução à Estatística', hours:60, area:'FB', period:2, prereqs:['MAT154'] },
+  { code:'EXT099', name:'Introdução à Extensão', hours:60, area:'FH', period:2, prereqs:[] },
+  { code:'FIS073', name:'Física I', hours:60, area:'FB', period:2, prereqs:['MAT154'] },
+  { code:'FIS077', name:'Laboratório de Física I', hours:30, area:'FB', period:2, prereqs:['FIS122'] },
+  { code:'MAT156', name:'Cálculo II', hours:60, area:'FB', period:2, prereqs:['MAT154','MAT155'] },
+  { code:'QUI168', name:'Laboratório de Transformações Químicas', hours:30, area:'FB', period:2, prereqs:['QUI126'] },
+
+  // Período 3
+  { code:'DCC013', name:'Estrutura de Dados', hours:60, area:'FB', period:3, prereqs:['DCC200'] },
+  { code:'DCC025', name:'Orientação a Objetos', hours:60, area:'FB', period:3, prereqs:['DCC200'] },
+  { code:'DCC122', name:'Circuitos Digitais', hours:60, area:'FT', period:3, prereqs:[] },
+  { code:'DCC160', name:'Lógica e Fundamentos para a Computação', hours:60, area:'FB', period:3, prereqs:[] },
+  { code:'DCC202', name:'Desenvolvimento Web', hours:30, area:'FB', period:3, prereqs:[] },
+  { code:'MAT143', name:'Introdução à Teoria dos Números', hours:60, area:'FT', period:3, prereqs:[] },
+  { code:'MAT157', name:'Cálculo III', hours:60, area:'FB', period:3, prereqs:['MAT156'] },
+
+  // Período 4
+  { code:'DCC008', name:'Cálculo Numérico', hours:60, area:'FC', period:4, prereqs:['DCC199','MAT156'] },
+  { code:'DCC012', name:'Estrutura de Dados II', hours:60, area:'FB', period:4, prereqs:['DCC013'] },
+  { code:'DCC070', name:'Organização de Computadores', hours:60, area:'FT', period:4, prereqs:['DCC122'] },
+  { code:'DCC117', name:'Modelagem de Sistemas', hours:60, area:'FT', period:4, prereqs:['DCC025'] },
+  { code:'MAT029', name:'Equações Diferenciais I', hours:60, area:'FC', period:4, prereqs:['MAT156'] },
+  { code:'MAT158', name:'Álgebra Linear', hours:60, area:'FT', period:4, prereqs:[] },
+
+  // Período 5
+  { code:'DCC059', name:'Teoria dos Grafos', hours:60, area:'FT', period:5, prereqs:['DCC013'] },
+  { code:'DCC060', name:'Banco de Dados', hours:60, area:'FT', period:5, prereqs:['DCC012','DCC117'] },
+  { code:'DCC061', name:'Engenharia de Software', hours:60, area:'FT', period:5, prereqs:['DCC117'] },
+  { code:'DCC062', name:'Sistemas Operacionais', hours:60, area:'FT', period:5, prereqs:['DCC070'] },
+  { code:'DCC065', name:'Computação Gráfica', hours:60, area:'FT', period:5, prereqs:['DCC199','MAT158'] },
+  { code:'DCC203', name:'Metodologia Científica', hours:30, area:'FH', period:5, prereqs:['DCC200'] },
+
+  // Período 6
+  { code:'DCC019', name:'Linguagem de Programação', hours:60, area:'FT', period:6, prereqs:['DCC012','DCC025'] },
+  { code:'DCC042', name:'Redes de Computadores', hours:60, area:'FT', period:6, prereqs:['DCC070'] },
+  { code:'DCC063', name:'Linguagens Formais e Autômatos', hours:60, area:'FT', period:6, prereqs:['DCC013','MAT143'] },
+  { code:'DCC163', name:'Pesquisa Operacional', hours:60, area:'FT', period:6, prereqs:['MAT158'] },
+  { code:'DCC174', name:'Interação Humano-Computador', hours:60, area:'FT', period:6, prereqs:['DCC061'] },
+  { code:'EADDCC044', name:'Informática e Sociedade', hours:30, area:'FH', period:6, prereqs:[] },
+
+  // Período 7
+  { code:'DCC001', name:'Análise e Projeto de Algoritmos', hours:60, area:'FT', period:7, prereqs:['DCC013','MAT143'] },
+  { code:'DCC014', name:'Inteligência Artificial', hours:60, area:'FT', period:7, prereqs:['DCC059','DCC160','EST028'] },
+  { code:'DCC055', name:'Teoria da Computação', hours:60, area:'FT', period:7, prereqs:['DCC063'] },
+  { code:'DCC075', name:'Segurança em Sistemas de Computação', hours:60, area:'FT', period:7, prereqs:['DCC042'] },
+  { code:'DCC204', name:'Trabalho de Conclusão de Curso I', hours:30, area:'FH', period:7, prereqs:['DCC203'], minHours:1560 },
+  { code:'EST029', name:'Cálculo de Probabilidade I', hours:60, area:'FT', period:7, prereqs:['MAT156'] },
+
+  // Período 8
+  { code:'DCC045', name:'Teoria dos Compiladores', hours:60, area:'FT', period:8, prereqs:['DCC063'] },
+  { code:'DCC064', name:'Sistemas Distribuídos', hours:60, area:'FT', period:8, prereqs:['DCC062'] },
+  { code:'DCC205', name:'Trabalho de Conclusão de Curso II', hours:60, area:'FH', period:8, prereqs:['DCC204'] },
+  { code:'ELE1', name:'Disciplina Eletiva', hours:60, area:'FC', period:8, prereqs:[], elective:true },
+  { code:'ELE2', name:'Disciplina Eletiva', hours:60, area:'FC', period:8, prereqs:[], elective:true },
+];
+
+const PERIOD_HOURS = {1:360,2:390,3:390,4:360,5:330,6:330,7:330,8:300};
+const TOTAL_MANDATORY_HOURS = COURSES.filter(c=>!c.elective).reduce((s,c)=>s+c.hours,0);
+
+const byCode = {};
+COURSES.forEach(c=>byCode[c.code]=c);
+
+// mapa reverso: quem cada matéria desbloqueia
+COURSES.forEach(c=>c.unlocks=[]);
+COURSES.forEach(c=>c.prereqs.forEach(p=>{ if(byCode[p]) byCode[p].unlocks.push(c.code); }));
+
+/* =========================================================
+   ESTADO
+   ========================================================= */
+const LS_KEY = 'ufjf-cc-grade-arvore-v1';
+let completed = new Set(JSON.parse(localStorage.getItem(LS_KEY) || '[]'));
+let planned = new Set();
+let simulateMode = false;
+let hoveredCode = null;
+
+function saveCompleted(){
+  localStorage.setItem(LS_KEY, JSON.stringify([...completed]));
+}
+
+function completedHours(){
+  return [...completed].reduce((s,code)=> s + (byCode[code]? byCode[code].hours : 0), 0);
+}
+
+function effectiveSet(){
+  // conjunto usado para checar pré-requisitos: concluídas + planejadas (simulação em cascata)
+  const s = new Set(completed);
+  planned.forEach(p=>s.add(p));
+  return s;
+}
+
+function prereqsMet(course, set){
+  const missing = course.prereqs.filter(p=>!set.has(p));
+  let hoursOk = true;
+  if(course.minHours){
+    hoursOk = completedHours() >= course.minHours;
+  }
+  return { ok: missing.length===0 && hoursOk, missing, hoursOk };
+}
+
+function statusOf(code){
+  const c = byCode[code];
+  if(completed.has(code)) return 'done';
+  if(planned.has(code)) return 'planned';
+  const set = effectiveSet();
+  const { ok } = prereqsMet(c, set);
+  return ok ? 'available' : 'locked';
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+const columnsEl = document.getElementById('columns');
+const svgEl = document.getElementById('edges');
+const contentEl = document.getElementById('content');
+const tooltipEl = document.getElementById('tooltip');
+
+function buildColumns(){
+  columnsEl.innerHTML = '';
+  for(let p=1;p<=8;p++){
+    const col = document.createElement('div');
+    col.className = 'column';
+    col.innerHTML = `<div class="col-head">
+        <div class="period-num">${p}º Período</div>
+        <div class="period-hours">${PERIOD_HOURS[p]}h recomendadas</div>
+      </div>`;
+    const list = document.createElement('div');
+    list.className = 'node-list';
+    COURSES.filter(c=>c.period===p).forEach(c=>{
+      list.appendChild(buildNode(c));
+    });
+    col.appendChild(list);
+    columnsEl.appendChild(col);
+  }
+}
+
+function buildNode(course){
+  const el = document.createElement('div');
+  el.className = 'node';
+  el.dataset.code = course.code;
+  const info = AREA_INFO[course.area];
+  el.innerHTML = `
+    <div class="area-tab" style="background:${info.color};"></div>
+    <div class="top-row">
+      <span class="code">${course.code}</span>
+      <span class="status-icon"></span>
+    </div>
+    <div class="name">${course.name}</div>
+    <div class="bottom-row">
+      <span class="hours">${course.hours}h</span>
+      <span class="area-badge" style="color:${info.color}; border:1px solid ${info.color};">${course.area}</span>
+    </div>
+    ${course.elective? '<div class="elective-tag">★</div>' : ''}
+  `;
+  el.addEventListener('click', ()=>onNodeClick(course.code));
+  el.addEventListener('mouseenter', ()=>onNodeHover(course.code));
+  el.addEventListener('mouseleave', ()=>onNodeLeave());
+  el.addEventListener('mousemove', (e)=>positionTooltip(e));
+  return el;
+}
+
+const STATUS_ICON = { done:'✔', available:'⭐', locked:'🔒', planned:'⏳' };
+
+function refreshNodes(){
+  let doneCount = 0;
+  document.querySelectorAll('.node').forEach(el=>{
+    const code = el.dataset.code;
+    const course = byCode[code];
+    const status = statusOf(code);
+    if(status==='done') doneCount++;
+    el.classList.remove('done','available','locked','planned');
+    el.classList.add(status);
+    el.querySelector('.status-icon').textContent = STATUS_ICON[status];
+  });
+  const totalMandatory = COURSES.filter(c=>!c.elective).length;
+  const doneMandatory = COURSES.filter(c=>!c.elective && completed.has(c.code)).length;
+  document.getElementById('statCourses').textContent = `${doneMandatory} / ${totalMandatory}`;
+  const h = completedHours();
+  document.getElementById('statHours').textContent = `${h}h / ${TOTAL_MANDATORY_HOURS}h`;
+  document.getElementById('progressFill').style.width = Math.min(100, (h/TOTAL_MANDATORY_HOURS*100)).toFixed(1)+'%';
+}
+
+/* ---------- Edges (SVG) ---------- */
+function edgeColor(fromCode, toCode){
+  const fromDone = completed.has(fromCode);
+  const toDone = completed.has(toCode);
+  const fromPlanned = planned.has(fromCode);
+  const toPlanned = planned.has(toCode);
+  if(fromDone && toDone) return {stroke:'#3ddc84', width:2.4, dash:'', marker:'arrow-green', op:.9};
+  if((fromDone||fromPlanned) && (toPlanned)) return {stroke:'#4aa8ff', width:2.2, dash:'6,4', op:.9, marker:'arrow-blue'};
+  if(fromDone && !toDone) return {stroke:'#e8b83d', width:2, dash:'', op:.75, marker:'arrow-gold'};
+  return {stroke:'#454864', width:1.4, dash:'4,4', op:.45, marker:'arrow-gray'};
+}
+
+function drawEdges(){
+  const cRect = contentEl.getBoundingClientRect();
+  contentEl.style.width = columnsEl.scrollWidth + 'px';
+  const w = columnsEl.scrollWidth;
+  const h = columnsEl.scrollHeight;
+  svgEl.setAttribute('width', w);
+  svgEl.setAttribute('height', h);
+  svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
+
+  let markers = `<defs>
+    ${['green','blue','gold','gray'].map(name=>{
+      const color = {green:'#3ddc84',blue:'#4aa8ff',gold:'#e8b83d',gray:'#454864'}[name];
+      return `<marker id="arrow-${name}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="${color}"></path>
+      </marker>`;
+    }).join('')}
+  </defs>`;
+
+  let paths = '';
+  COURSES.forEach(course=>{
+    course.prereqs.forEach(pCode=>{
+      const fromEl = document.querySelector(`.node[data-code="${pCode}"]`);
+      const toEl = document.querySelector(`.node[data-code="${course.code}"]`);
+      if(!fromEl || !toEl) return;
+      const fr = fromEl.getBoundingClientRect();
+      const tr = toEl.getBoundingClientRect();
+      const x1 = fr.right - cRect.left;
+      const y1 = fr.top + fr.height/2 - cRect.top;
+      const x2 = tr.left - cRect.left;
+      const y2 = tr.top + tr.height/2 - cRect.top;
+      const dx = Math.max(40, (x2-x1)*0.5);
+      const c = edgeColor(pCode, course.code);
+      const highlighted = hoveredCode && (hoveredCode===pCode || hoveredCode===course.code);
+      const dimmed = hoveredCode && !highlighted;
+      paths += `<path d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}"
+        fill="none" stroke="${c.stroke}" stroke-width="${highlighted? c.width+1.4 : c.width}"
+        stroke-dasharray="${c.dash}" opacity="${dimmed? 0.12 : (highlighted? 1: c.op)}"
+        marker-end="url(#${c.marker})" data-from="${pCode}" data-to="${course.code}"></path>`;
+    });
+  });
+
+  svgEl.innerHTML = markers + paths;
+}
+
+function redrawAll(){
+  refreshNodes();
+  requestAnimationFrame(drawEdges);
+}
+
+/* =========================================================
+   INTERAÇÃO
+   ========================================================= */
+function onNodeClick(code){
+  const course = byCode[code];
+  const status = statusOf(code);
+  const el = document.querySelector(`.node[data-code="${code}"]`);
+
+  if(status==='locked'){
+    el.classList.remove('locked-shake');
+    void el.offsetWidth;
+    el.classList.add('locked-shake');
+    return;
+  }
+
+  if(simulateMode){
+    if(status==='planned'){
+      planned.delete(code);
+    } else if(status==='available'){
+      planned.add(code);
+    }
+  } else {
+    if(status==='done'){
+      completed.delete(code);
+    } else if(status==='available'){
+      completed.add(code);
+      planned.delete(code);
+    }
+    saveCompleted();
+  }
+  redrawAll();
+  if(hoveredCode===code) showTooltip(code);
+}
+
+function onNodeHover(code){
+  hoveredCode = code;
+  document.querySelectorAll('.node').forEach(el=>el.classList.remove('hl-source','hl-prereq','hl-unlock','dim'));
+  const course = byCode[code];
+  const self = document.querySelector(`.node[data-code="${code}"]`);
+  self.classList.add('hl-source');
+  course.prereqs.forEach(p=>{
+    const n = document.querySelector(`.node[data-code="${p}"]`);
+    if(n) n.classList.add('hl-prereq');
+  });
+  course.unlocks.forEach(u=>{
+    const n = document.querySelector(`.node[data-code="${u}"]`);
+    if(n) n.classList.add('hl-unlock');
+  });
+  drawEdges();
+  showTooltip(code);
+}
+
+function onNodeLeave(){
+  hoveredCode = null;
+  document.querySelectorAll('.node').forEach(el=>el.classList.remove('hl-source','hl-prereq','hl-unlock'));
+  drawEdges();
+  hideTooltip();
+}
+
+function showTooltip(code){
+  const course = byCode[code];
+  const status = statusOf(code);
+  const info = AREA_INFO[course.area];
+  const set = effectiveSet();
+  const { missing, hoursOk } = prereqsMet(course, set);
+
+  let prereqHtml = '<span class="tt-list ok">Nenhum</span>';
+  if(course.prereqs.length){
+    prereqHtml = '<div class="tt-list">' + course.prereqs.map(p=>{
+      const met = set.has(p);
+      return `<div class="${met?'ok':'warn'}">${met?'✔':'✖'} ${byCode[p]? byCode[p].name : p}</div>`;
+    }).join('') + '</div>';
+  }
+  let unlocksHtml = '<span class="tt-list">Nenhuma</span>';
+  if(course.unlocks.length){
+    unlocksHtml = '<div class="tt-list">' + course.unlocks.map(u=>`<div>→ ${byCode[u].name}</div>`).join('') + '</div>';
+  }
+
+  let extra = '';
+  if(course.minHours){
+    extra = `<div class="tt-section"><span class="tt-label">Requisito extra</span>
+      <div class="tt-list ${hoursOk?'ok':'warn'}">${hoursOk?'✔':'✖'} ${course.minHours}h cursadas no total (você tem ${completedHours()}h)</div></div>`;
+  }
+  if(course.note){
+    extra += `<div class="tt-section"><span class="tt-label">Observação</span><div class="tt-list">${course.note}</div></div>`;
+  }
+
+  const statusLabel = {done:'Concluída ✔', available:'Disponível ⭐', locked:'Bloqueada 🔒', planned:'Planejada (simulação) ⏳'}[status];
+
+  tooltipEl.innerHTML = `
+    <h4>${course.name}</h4>
+    <div class="tt-meta">${course.code} · ${course.hours}h · ${info.label} · ${course.period}º período · <strong>${statusLabel}</strong></div>
+    <div class="tt-section"><span class="tt-label">Pré-requisitos</span>${prereqHtml}</div>
+    <div class="tt-section"><span class="tt-label">Desbloqueia</span>${unlocksHtml}</div>
+    ${extra}
+  `;
+  tooltipEl.classList.add('show');
+}
+
+function hideTooltip(){ tooltipEl.classList.remove('show'); }
+
+function positionTooltip(e){
+  const pad = 16;
+  let x = e.clientX + pad;
+  let y = e.clientY + pad;
+  const tw = 300, th = 260;
+  if(x + tw > window.innerWidth) x = e.clientX - tw - pad;
+  if(y + th > window.innerHeight) y = e.clientY - th - pad;
+  tooltipEl.style.left = x+'px';
+  tooltipEl.style.top = y+'px';
+}
+
+/* ---------- Controles ---------- */
+document.getElementById('simulateToggle').addEventListener('click', function(){
+  simulateMode = !simulateMode;
+  this.classList.toggle('active', simulateMode);
+  this.textContent = simulateMode ? 'Modo Simulação (ativo)' : 'Modo Simulação';
+});
+
+document.getElementById('clearPlanned').addEventListener('click', ()=>{
+  planned.clear();
+  redrawAll();
+});
+
+document.getElementById('resetProgress').addEventListener('click', ()=>{
+  if(confirm('Tem certeza que deseja apagar todo o seu progresso salvo?')){
+    completed.clear();
+    planned.clear();
+    saveCompleted();
+    redrawAll();
+  }
+});
+
+document.getElementById('search').addEventListener('input', (e)=>{
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll('.node').forEach(el=>{
+    const course = byCode[el.dataset.code];
+    if(!q){
+      el.classList.remove('dim','search-hit');
+      return;
+    }
+    const match = course.code.toLowerCase().includes(q) || course.name.toLowerCase().includes(q);
+    el.classList.toggle('search-hit', match);
+    el.classList.toggle('dim', !match);
+  });
+});
+
+window.addEventListener('resize', ()=>{ requestAnimationFrame(drawEdges); });
+
+/* =========================================================
+   INIT
+   ========================================================= */
+buildColumns();
+redrawAll();
+// recalcula arestas após fontes/layout assentarem
+setTimeout(drawEdges, 150);
+if(document.fonts && document.fonts.ready){ document.fonts.ready.then(drawEdges); }
+</script>
+</body>
+</html>
